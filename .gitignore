@@ -1,0 +1,15 @@
+.DS_Store
+*.log
+
+# Authentication
+gh/hosts.yml
+
+# App history and runtime state
+**/automatic_backups/
+calyx/browser.json
+flutter/tool_state
+wireshark/recent*
+
+# Generated caches
+**/*cache*
+
