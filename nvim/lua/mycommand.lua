@@ -1,64 +1,75 @@
--- :Memoでメモファイルを開く
-vim.api.nvim_create_user_command('Memo', function()
-  vim.cmd('edit ~/Desktop/memo/memo.md')
+local platform = require("platform")
+
+local memo_dir = platform.memo_dir
+local daily_log_dir = platform.daily_log_dir
+
+---指定したファイルを安全に開きます。
+---@param path string
+local function edit(path)
+    vim.cmd.edit(vim.fn.fnameescape(path))
+end
+
+---現在のファイルをターミナルで実行します。
+---@param command string
+---@param args? string[]
+---@param stdin_file? string
+local function run_in_terminal(command, args, stdin_file)
+    if vim.fn.executable(command) == 0 then
+        vim.notify(command .. " が見つかりません。PATHを確認してください。", vim.log.levels.ERROR)
+        return
+    end
+
+    vim.cmd.write()
+    vim.cmd.split()
+
+    local argv = { command }
+    vim.list_extend(argv, args or {})
+    if stdin_file then
+        local escaped = vim.tbl_map(vim.fn.shellescape, argv)
+        local shell_command = table.concat(escaped, " ") .. " < " .. vim.fn.shellescape(stdin_file)
+        vim.fn.termopen(shell_command)
+    else
+        vim.fn.termopen(argv)
+    end
+    vim.cmd.startinsert()
+end
+
+vim.api.nvim_create_user_command("Memo", function()
+    edit(platform.join(memo_dir, "memo.md"))
 end, {})
 
--- :Memoでメモファイルを開く
-vim.api.nvim_create_user_command('Smemo', function()
-  vim.cmd('edit ~/Desktop/memo/secretmemo.md')
+vim.api.nvim_create_user_command("Smemo", function()
+    edit(platform.join(memo_dir, "secretmemo.md"))
 end, {})
 
--- :Dmemoで日毎に別れたメモを開く
-vim.api.nvim_create_user_command('Dmemo', function()
-  local date = os.date('%Y-%m-%d')
-  vim.cmd('edit ~/Desktop/memo/' .. date .. '.md')
+vim.api.nvim_create_user_command("Dmemo", function()
+    edit(platform.join(memo_dir, os.date("%Y-%m-%d") .. ".md"))
 end, {})
 
--- :Dlogで日記を開く(1日1回書けたらいいな)
-vim.api.nvim_create_user_command('Dlog', function()
-  local date = os.date('%Y-%m-%d')
-  vim.cmd('edit ~/Desktop/daily_log/' .. date .. '.md')
+vim.api.nvim_create_user_command("Dlog", function()
+    edit(platform.join(daily_log_dir, os.date("%Y-%m-%d") .. ".md"))
 end, {})
 
--- :PmemoでPythonファイルを開く
-vim.api.nvim_create_user_command('P', function()
-  vim.cmd('edit ~/Desktop/memo/test.py')
+vim.api.nvim_create_user_command("P", function()
+    edit(platform.join(memo_dir, "test.py"))
 end, {})
 
--- :SmemoでSwiftファイルを開く
-vim.api.nvim_create_user_command('S', function()
-  vim.cmd('edit ~/Desktop/memo/test.swift')
+vim.api.nvim_create_user_command("Py", function()
+    run_in_terminal(platform.python or "python3", { vim.api.nvim_buf_get_name(0) })
 end, {})
 
--- :PyでPythonファイルを実行
-vim.api.nvim_create_user_command('Py', function()
-  vim.cmd('write')
-  vim.cmd('split | terminal python3 ' .. vim.fn.expand('%:p'))
-  vim.cmd('startinsert')
+vim.api.nvim_create_user_command("W", function()
+    vim.cmd.write()
 end, {})
 
--- :SwでSwiftファイルを実行
-vim.api.nvim_create_user_command('Sw', function()
-  vim.cmd('write')
-  vim.cmd('split | terminal swift ' .. vim.fn.expand('%:p'))
-end, {})
--- :W や :Wq で保存
-vim.api.nvim_create_user_command('W', function()
-  vim.cmd('write')
+vim.api.nvim_create_user_command("Wq", function()
+    vim.cmd.wq()
 end, {})
 
-vim.api.nvim_create_user_command('Wq', function()
-  vim.cmd('wq')
-end, {})
-
--- :As で Swift プログラムを実行 (AtCoder用)
-vim.api.nvim_create_user_command('As', function()
-  vim.cmd('write')
-  vim.cmd('!swift % < test.txt')
-end, {})
-
--- :Ap で Python プログラムを実行 (AtCoder用)
-vim.api.nvim_create_user_command('Ap', function()
-  vim.cmd('write')
-  vim.cmd('!python3 % < test.txt')
+vim.api.nvim_create_user_command("Ap", function()
+    run_in_terminal(
+        platform.python or "python3",
+        { vim.api.nvim_buf_get_name(0) },
+        platform.join(vim.fn.getcwd(), "test.txt")
+    )
 end, {})

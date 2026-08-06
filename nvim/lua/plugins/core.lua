@@ -1,5 +1,4 @@
--- OS-specific plugins are disabled on Windows.
-local is_windows = vim.loop.os_uname().sysname:match("Windows") ~= nil
+local platform = require("platform")
 
 return {
   -- =========================
@@ -41,7 +40,11 @@ return {
     dependencies = {
       'nvim-lua/plenary.nvim',
       -- optional but recommended
-      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        cond = platform.fzf_build ~= nil,
+        build = platform.fzf_build,
+      },
     }
   },
   -- =========================
@@ -102,6 +105,12 @@ return {
       -- Individual servers are configured and enabled in lua/lsp.lua.
     end,
   },
+  {
+    "j-hui/fidget.nvim",
+    version = "*",
+    event = "LspAttach",
+    opts = {},
+  },
 
   -- =========================
   -- Mason (installer)
@@ -142,7 +151,7 @@ return {
   -- ========================
   {
     "stevearc/conform.nvim",
-    event = { "BufWritePre" },
+    cmd = "ConformInfo",
     keys = {
       {
         "<leader>cf",
@@ -154,17 +163,12 @@ return {
     },
     config = function()
       require("conform").setup({
-        format_on_save = {
-          timeout_ms = 500,
-          lsp_format = "fallback",
-        },
         formatters_by_ft = {
           lua = { "stylua" },
           python = { "ruff_format" },
           javascript = { "prettier" },
           typescript = { "prettier" },
           markdown = { "prettier" },
-          swift = { "swiftformat" },
         },
       })
     end,
@@ -206,7 +210,7 @@ return {
   {
     "Wansmer/treesj",
     keys = {
-      { "J", "<cmd>TSJToggle<CR>", desc = "Toggle split/join" },
+      { "<leader>cj", "<cmd>TSJToggle<CR>", desc = "Toggle split/join" },
     },
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     config = function()
@@ -250,7 +254,7 @@ return {
         { "<leader>s", group = "検索・置換" },
         { "<leader>q", group = "セッション" },
         { "<leader>o", group = "Octo (GitHub)" },
-        { "<leader>d", group = "デバッグ (DAP)" },
+        { "<leader>v", group = "Python環境" },
       })
     end,
   },

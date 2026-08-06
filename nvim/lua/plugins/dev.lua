@@ -1,4 +1,26 @@
+local platform = require("platform")
+
 return {
+  -- =========================
+  -- Python環境
+  -- =========================
+  {
+    "linux-cultist/venv-selector.nvim",
+    main = "venv-selector",
+    ft = "python",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "nvim-telescope/telescope.nvim",
+    },
+    keys = {
+      { "<leader>vs", "<cmd>VenvSelect<CR>", desc = "Select Python environment" },
+    },
+    opts = {
+      options = {},
+      search = {},
+    },
+  },
+
   -- =========================
   -- タスクランナー
   -- =========================
@@ -16,7 +38,7 @@ return {
             vim = "source %",
           },
           external = {
-            python = "python3 %",
+            python = vim.fn.shellescape(platform.python or "python3") .. " %",
             javascript = "node %",
             sh = "sh %",
           },
@@ -43,68 +65,6 @@ return {
         },
       })
     end,
-  },
-
-  -- =========================
-  -- デバッガ (DAP)
-  -- =========================
-  {
-    "mfussenegger/nvim-dap",
-    dependencies = {
-      {
-        "rcarriga/nvim-dap-ui",
-        dependencies = { "nvim-neotest/nvim-nio" },
-      },
-      "mfussenegger/nvim-dap-python",
-    },
-    keys = {
-      { "<leader>dc", function() require("dap").continue() end,          desc = "Continue" },
-      { "<leader>do", function() require("dap").step_over() end,         desc = "Step Over" },
-      { "<leader>di", function() require("dap").step_into() end,         desc = "Step Into" },
-      { "<leader>dO", function() require("dap").step_out() end,          desc = "Step Out" },
-      { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Breakpoint Toggle" },
-      {
-        "<leader>dB",
-        function() require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: ")) end,
-        desc = "Conditional Breakpoint",
-      },
-      {
-        "<leader>dl",
-        function() require("dap").set_breakpoint(nil, nil, vim.fn.input("Log point message: ")) end,
-        desc = "Log Point",
-      },
-      { "<leader>du", function() require("dapui").toggle() end, desc = "DAP UI Toggle" },
-      { "<leader>de", function() require("dapui").eval() end,   desc = "DAP Eval",     mode = { "n", "v" } },
-    },
-    config = function()
-      require("mydap")
-    end,
-  },
-  {
-    "theHamsta/nvim-dap-virtual-text",
-    event = "VeryLazy",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "nvim-treesitter/nvim-treesitter",
-    },
-    opts = {
-      enabled = true,
-
-      -- 変更された値だけ表示
-      highlight_changed_variables = true,
-
-      -- 新しい値を強調
-      highlight_new_as_changed = false,
-
-      -- 停止中だけ表示
-      all_references = false,
-
-      -- コメント風の表示
-      commented = true,
-
-      -- 実行位置だけ表示
-      virt_text_pos = "eol",
-    },
   },
 
   -- =========================

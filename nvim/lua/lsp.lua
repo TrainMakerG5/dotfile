@@ -1,18 +1,14 @@
 -- Language servers used across the development environments on this machine.
--- Java is started by nvim-jdtls and Dart by flutter-tools.nvim, so enabling
--- jdtls/dartls here as well would create duplicate clients.
+-- Dart is started by flutter-tools.nvim, so enabling dartls here as well
+-- would create a duplicate client.
 vim.lsp.enable({
   "pyright",       -- Python
   "ts_ls",         -- JavaScript / TypeScript
-  "sourcekit",     -- Swift
   "lua_ls",        -- Lua
-  "rust_analyzer", -- Rust
   "omnisharp",     -- C#
-  "phpactor",      -- PHP
   "html",          -- HTML
   "cssls",         -- CSS
   "emmet_ls",      -- HTML/CSS/JSX abbreviations
-  "sqls",
 })
 
 vim.lsp.config("pyright", {

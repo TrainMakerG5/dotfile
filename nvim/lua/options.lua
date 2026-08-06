@@ -1,3 +1,31 @@
+local platform = require("platform")
+
+-- WSLではWindows側のクリップボードへ直接接続します。
+if platform.is_wsl
+    and vim.fn.executable("clip.exe") == 1
+    and vim.fn.executable("powershell.exe") == 1
+then
+    local paste_command = {
+        "powershell.exe",
+        "-NoLogo",
+        "-NoProfile",
+        "-Command",
+        '[Console]::Out.Write((Get-Clipboard -Raw).ToString().Replace("`r", ""))',
+    }
+    vim.g.clipboard = {
+        name = "WslClipboard",
+        copy = {
+            ["+"] = { "clip.exe" },
+            ["*"] = { "clip.exe" },
+        },
+        paste = {
+            ["+"] = paste_command,
+            ["*"] = paste_command,
+        },
+        cache_enabled = 0,
+    }
+end
+
 local options = {
   encoding = "utf-8",
   fileencoding = "utf-8",
@@ -23,8 +51,6 @@ local options = {
   undofile = true,
   updatetime = 300,
   writebackup = false,
-  shell = "/bin/zsh",
-  backupskip = { "/tmp/*", "/private/tmp/*" },
   expandtab = true,
   shiftwidth = 2,
   tabstop = 2,
@@ -54,6 +80,11 @@ vim.opt.shortmess:append("c")
 
 for k, v in pairs(options) do
   vim.opt[k] = v
+end
+
+-- Unix系ではzshがある場合だけ利用し、WindowsではNeovimの既定シェルを維持します。
+if vim.fn.has("win32") == 0 and vim.fn.executable("zsh") == 1 then
+  vim.opt.shell = vim.fn.exepath("zsh")
 end
 
 vim.cmd([[set iskeyword+=-]])

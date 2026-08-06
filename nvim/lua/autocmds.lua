@@ -1,30 +1,7 @@
 local augroup = vim.api.nvim_create_augroup -- Create/get autocommand group
 local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
 local general = augroup("GeneralSettings", { clear = true })
-
--- Insertモードを抜けたら自動的に英語入力に切り替え (im-select Windows版)
-local en_locale = "1033" -- Windows英語キーボードのLocale ID
-
-autocmd("InsertLeave", {
-    group = general,
-    pattern = "*",
-    callback = function()
-        if vim.fn.executable("im-select.exe") == 1 then
-            vim.fn.jobstart({ "im-select.exe", en_locale }, { detach = true })
-        end
-    end,
-})
-
--- Remove whitespace on save
-autocmd("BufWritePre", {
-  group = general,
-  pattern = "*",
-  callback = function(args)
-    if vim.bo[args.buf].modifiable and vim.bo[args.buf].buftype == "" then
-      vim.cmd([[silent! %s/\s\+$//e]])
-    end
-  end,
-})
+local platform = require("platform")
 
 -- Don't auto commenting new lines
 autocmd("BufEnter", {
@@ -166,12 +143,12 @@ local function commit_and_push(opts)
 end
 
 vim.api.nvim_create_user_command("MemoPush", function()
-  commit_and_push({ cwd = "~/Desktop/memo" })
+  commit_and_push({ cwd = platform.memo_dir })
 end, { desc = "Commit and push the current memo" })
 
 vim.api.nvim_create_user_command("DailyPush", function()
   commit_and_push({
-    cwd = "~/Desktop/daily_log",
+    cwd = platform.daily_log_dir,
     all = true,
     message = os.date("%Y-%m-%d") .. "の日記",
   })

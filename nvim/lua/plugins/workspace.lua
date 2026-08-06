@@ -1,5 +1,4 @@
--- OS-specific plugins are disabled on Windows.
-local is_windows = vim.loop.os_uname().sysname:match("Windows") ~= nil
+local platform = require("platform")
 
 return {
   -- =========================
@@ -7,7 +6,7 @@ return {
   -- =========================
   {
     "3rd/image.nvim",
-    cond = not is_windows,
+    cond = platform.image_support,
     -- magick_cli uses the system ImageMagick binary and does not need LuaRocks.
     build = false,
     opts = {
@@ -27,7 +26,7 @@ return {
   },
   {
     "benlubas/molten-nvim",
-    dependencies = not is_windows and { "3rd/image.nvim" } or nil,
+    dependencies = platform.image_support and { "3rd/image.nvim" } or nil,
     -- Molten is a Python remote plugin. Lazy-loading its commands can remove
     -- the registered command while the kernel-selection prompt is open.
     lazy = false,
@@ -43,7 +42,7 @@ return {
       -- Herdr does not reliably forward Kitty graphics; use the macOS image viewer there.
       vim.g.molten_auto_image_popup = vim.env.HERDR_ENV == "1"
       -- Windowsではimage.nvimを使わない（未ロードのため）
-      if not is_windows then
+      if platform.image_support then
         vim.g.molten_image_provider = "image.nvim"
       end
     end,
@@ -54,61 +53,6 @@ return {
     event = "VeryLazy",
     config = function()
       require("notebook-navigator").setup({ repl_provider = "molten" })
-    end,
-  },
-  {
-    "mfussenegger/nvim-jdtls",
-    ft = { "java" },
-    config = function()
-      local jdtls = require("jdtls")
-      local home = os.getenv("HOME")
-      local root_dir = require("jdtls.setup").find_root({
-        ".git",
-        "pom.xml",
-        "build.gradle",
-        "build.gradle.kts",
-        "mvnw",
-        "gradlew",
-      })
-      if not root_dir then
-        -- Still provide Java language features for a standalone .java file.
-        root_dir = vim.fn.getcwd()
-      end
-      -- JDTLS workspaces cannot safely be shared by unrelated projects.
-      local workspace = home .. "/.cache/jdtls/" .. vim.fn.sha256(root_dir):sub(1, 16)
-
-      -- Masonのjdtlsパスを取得
-      local mason_registry = require("mason-registry")
-      local jdtls_path = mason_registry.get_package("jdtls"):get_install_path()
-      local launcher_jar = vim.fn.glob(jdtls_path .. "/plugins/org.eclipse.equinox.launcher_*.jar")
-      if launcher_jar == "" then
-        vim.notify("jdtls launcher jar not found", vim.log.levels.ERROR)
-        return
-      end
-
-      jdtls.start_or_attach({
-        cmd = {
-          "java",
-          "-Declipse.application=org.eclipse.jdt.ls.core.id1",
-          "-Dosgi.bundles.defaultStartLevel=4",
-          "-Declipse.product=org.eclipse.jdt.ls.core.product",
-          "-Dlog.protocol=true",
-          "-Dlog.level=OFF",
-          "-noverify",
-          "-Xmx1G",
-          "-jar",
-          launcher_jar,
-          "-configuration",
-          jdtls_path .. (is_windows and "/config_win" or "/config_mac"),
-          "-data",
-          workspace,
-        },
-        root_dir = root_dir,
-        workspace_folders = { {
-          uri = "file://" .. workspace,
-          name = "workspace",
-        } },
-      })
     end,
   },
   {
@@ -176,10 +120,7 @@ return {
     'Bekaboo/dropbar.nvim',
     event = { "LspAttach", "BufReadPost" },
     -- optional, but required for fuzzy finder support
-    dependencies = {
-      'nvim-telescope/telescope-fzf-native.nvim',
-      build = 'make'
-    },
+    dependencies = { "nvim-telescope/telescope.nvim" },
     config = function()
       local dropbar_api = require('dropbar.api')
       vim.keymap.set('n', '<Leader>;', dropbar_api.pick, { desc = 'Pick symbols in winbar' })
@@ -266,47 +207,6 @@ return {
     event = "VeryLazy",
     config = function()
       require("nvim-surround").setup({})
-    end,
-  },
-  {
-    "folke/flash.nvim",
-    event = "VeryLazy",
-    opts = {
-      modes = {
-        -- f/F/t/T のデフォルトフックを無効化（Fをlive_grepで使うため競合回避）
-        char = {
-          enabled = false,
-        },
-      },
-    },
-    keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-      { "r", mode = "o",               function() require("flash").remote() end,     desc = "Remote Flash" },
-    },
-  },
-  {
-    "gbprod/yanky.nvim",
-    dependencies = { "nvim-telescope/telescope.nvim" },
-    opts = {},
-    keys = {
-      { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank text" },
-      { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" }, desc = "Put after cursor" },
-      { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" }, desc = "Put before cursor" },
-      { "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" }, desc = "Put after and move cursor" },
-      { "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" }, desc = "Put before and move cursor" },
-      { "<C-p>", "<Plug>(YankyPreviousEntry)", desc = "Previous yank entry" },
-      { "<C-n>", "<Plug>(YankyNextEntry)", desc = "Next yank entry" },
-      {
-        "<leader>fy",
-        "<cmd>Telescope yank_history<CR>",
-        mode = { "n", "x" },
-        desc = "Yank history",
-      },
-    },
-    config = function(_, opts)
-      require("yanky").setup(opts)
-      require("telescope").load_extension("yank_history")
     end,
   },
   {
@@ -424,24 +324,9 @@ return {
     end,
   },
   {
-    "gbprod/substitute.nvim",
-    event = "VeryLazy",
-    config = function()
-      require("substitute").setup()
-    end,
-  },
-  {
     "yorickpeterse/nvim-pqf",
     ft = "qf",
     opts = {},
-  },
-  {
-    "chrisgrieser/nvim-spider",
-    keys = {
-      { "w", "<cmd>lua require('spider').motion('w')<CR>", mode = { "n", "o", "x" } },
-      { "e", "<cmd>lua require('spider').motion('e')<CR>", mode = { "n", "o", "x" } },
-      { "b", "<cmd>lua require('spider').motion('b')<CR>", mode = { "n", "o", "x" } },
-    },
   },
   {
     "mrjones2014/smart-splits.nvim",
@@ -490,7 +375,7 @@ return {
   },
   {
     "3rd/diagram.nvim",
-    cond = not is_windows,
+    cond = platform.image_support,
     ft = "markdown",
     dependencies = {
       "3rd/image.nvim",

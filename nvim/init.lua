@@ -9,12 +9,18 @@ vim.g.maplocalleader = " "
 -- =========================
 vim.opt.termguicolors = true
 
+-- VSCode NeovimではVSCodeと競合しない専用設定だけを読み込みます。
+if vim.g.vscode then
+    require("vscode-config")
+    return
+end
+
 -- =========================
 -- bootstrap lazy.nvim
 -- =========================
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+local lazypath = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy", "lazy.nvim")
 
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
     "clone",

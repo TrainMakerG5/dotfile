@@ -22,10 +22,6 @@ vim.g.maplocalleader = " "
 --   command_mode = 'c',
 
 
--- 縦方向矢印キーを5行飛ぶようにする
-vim.keymap.set("n", "<Up>", "5k")
-vim.keymap.set("n", "<Down>", "5j")
-
 -- Brtter window navigation (smart-splits.nvimに移行、plugins.luaで定義)
 
 -- New tab
@@ -41,49 +37,23 @@ keymap("n", "<S-Tab>", ":bprev<CR>", { silent = true })
 keymap("n", "<leader>bt", ":tabclose<CR>", opts)
 -- バッファ（上に並ぶタブ)を閉じる
 keymap("n", "<leader>bd", ":bdelete<CR>", opts)
--- Do not yank with x
-keymap("n", "x", '"_x', opts)
-
--- Delete a word backwards
-keymap("n", "dw", 'vb"_d', opts)
-
 keymap("n", "<Space>l", "$", opts)
-
--- ;でコマンド入力( ;と:を入れ替)
-keymap("n", ";", ":", opts)
-
--- 行末までのヤンクにする
-keymap("n", "Y", "y$", opts)
-
--- <Space>Q で強制終了
-keymap("n", "<Space>Q", ":<C-u>q!<Return>", opts)
 
 -- ESC でハイライトやめる
 keymap("n", "<Esc>", ":<C-u>set nohlsearch<Return>", opts)
-
--- Insert --
--- Press jk fast to exit insert mode
-keymap("i", "jk", "<ESC>", opts)
-
--- コンマの後に自動的にスペースを挿入
-keymap("i", ",", ",<Space>", opts)
 
 -- Visual --
 -- Stay in indent mode
 keymap("v", "<", "<gv", opts)
 keymap("v", ">", ">gv", opts)
 
--- ビジュアルモード時vで行末まで選択
-keymap("v", "v", "$h", opts)
-
--- 0番レジスタを使いやすくした
-keymap("v", "<C-p>", '"0p', opts)
-
 -- Oilを使いやすくした
 keymap("n", "<leader>e", ":Oil<Return>", opts)
 
 -- Molten
-vim.keymap.set("n", "<leader>ni", ":MoltenInit python3<CR>", { desc = "Notebook init" })
+vim.keymap.set("n", "<leader>ni", function()
+  vim.cmd("MoltenInit " .. (vim.env.NVIM_PYTHON_KERNEL or "python3"))
+end, { desc = "Notebook init" })
 
 -- セル実行(カーソル位置の # %% セルをまるごと実行)
 vim.keymap.set("n", "<leader>nr", function()
@@ -138,10 +108,3 @@ vim.keymap.set("n", "<leader>nd", "<cmd>MoltenDelete!<CR>", { desc = "Delete all
 
 -- エラーの確認
 vim.keymap.set("n", "<leader>er", vim.diagnostic.open_float, { desc = "Show diagnostic" })
-
--- GitHub系
-vim.keymap.set("n", "<leader>gd", function()
-  vim.cmd("Neogit")
-  vim.cmd("vsplit")
-  vim.cmd("Octo pr list")
-end, { desc = "Git Dashboard (Neogit + Octo)" })
