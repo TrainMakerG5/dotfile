@@ -88,8 +88,10 @@ function M.to_html()
         for _, item in ipairs(section.items) do
             table.insert(entries, "<dt>" .. escape_html(item[1]) .. "</dt><dd>" .. escape_html(item[2]) .. "</dd>")
         end
-        table.insert(cards, "<section><h2>" .. escape_html(section.title) .. "</h2><dl>"
-            .. table.concat(entries) .. "</dl></section>")
+        table.insert(
+            cards,
+            "<section><h2>" .. escape_html(section.title) .. "</h2><dl>" .. table.concat(entries) .. "</dl></section>"
+        )
     end
 
     return [[<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
@@ -101,9 +103,9 @@ h1{margin:0;color:var(--vscode-textLink-foreground);font-size:18px;letter-spacin
 main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:14px}section{padding:14px;border:1px solid var(--vscode-widget-border);border-radius:10px;background:var(--vscode-editorWidget-background)}
 h2{margin:0 0 10px;color:var(--vscode-symbolIcon-keywordForeground);font-size:14px}dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 12px;margin:0;align-items:baseline}dt,dd{margin:0}dt{color:var(--vscode-terminal-ansiCyan);font-family:var(--vscode-editor-font-family);font-weight:700;white-space:nowrap}dd{color:var(--vscode-descriptionForeground);font-size:12px}
 kbd{padding:2px 6px;border:1px solid var(--vscode-keybindingLabel-border);border-bottom-width:2px;border-radius:5px;color:var(--vscode-keybindingLabel-foreground);background:var(--vscode-keybindingLabel-background);font-family:var(--vscode-editor-font-family)}
-</style></head><body><article class="guide"><header><h1>Vim Editing Guide</h1><p class="hint"><kbd>Space</kbd> <kbd>?</kbd> でもう一度押すと閉じます</p></header><main>]]
-        .. table.concat(cards)
-        .. "</main></article></body></html>"
+</style></head><body><article class="guide"><header><h1>Vim Editing Guide</h1><p class="hint"><kbd>Space</kbd> <kbd>?</kbd> でもう一度押すと閉じます</p></header><main>]] .. table.concat(
+        cards
+    ) .. "</main></article></body></html>"
 end
 
 return M

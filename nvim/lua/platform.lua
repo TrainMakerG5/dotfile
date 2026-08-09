@@ -31,9 +31,7 @@ local has_kitty_graphics = vim.env.KITTY_WINDOW_ID ~= nil
     or vim.env.WEZTERM_PANE ~= nil
     or vim.env.GHOSTTY_RESOURCES_DIR ~= nil
     or vim.env.TERM_PROGRAM == "ghostty"
-M.image_support = not M.is_windows
-    and M.executable({ "magick" }) ~= nil
-    and (not M.is_wsl or has_kitty_graphics)
+M.image_support = not M.is_windows and M.executable({ "magick" }) ~= nil and (not M.is_wsl or has_kitty_graphics)
 
 if M.is_windows then
     M.fzf_build = vim.fn.executable("cmake") == 1

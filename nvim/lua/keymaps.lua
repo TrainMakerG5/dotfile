@@ -4,10 +4,18 @@ local term_opts = { silent = true }
 --local keymap = vim.keymap
 local keymap = vim.api.nvim_set_keymap
 -- Telescope
-vim.keymap.set('n', '<leader>ff', function() require('telescope.builtin').find_files() end, { desc = 'Find files' })
-vim.keymap.set('n', '<leader>fg', function() require('telescope.builtin').live_grep() end, { desc = 'Live grep' })
-vim.keymap.set('n', '<leader>fb', function() require('telescope.builtin').buffers() end, { desc = 'Buffers' })
-vim.keymap.set('n', '<leader>fh', function() require('telescope.builtin').help_tags() end, { desc = 'Help tags' })
+vim.keymap.set("n", "<leader>ff", function()
+    require("telescope.builtin").find_files()
+end, { desc = "Find files" })
+vim.keymap.set("n", "<leader>fg", function()
+    require("telescope.builtin").live_grep()
+end, { desc = "Live grep" })
+vim.keymap.set("n", "<leader>fb", function()
+    require("telescope.builtin").buffers()
+end, { desc = "Buffers" })
+vim.keymap.set("n", "<leader>fh", function()
+    require("telescope.builtin").help_tags()
+end, { desc = "Help tags" })
 --Remap space as leader key
 keymap("", "<Space>", "<Nop>", opts)
 vim.g.mapleader = " "
@@ -20,7 +28,6 @@ vim.g.maplocalleader = " "
 --   visual_block_mode = 'x',
 --   term_mode = 't',
 --   command_mode = 'c',
-
 
 -- Brtter window navigation (smart-splits.nvimに移行、plugins.luaで定義)
 
@@ -52,46 +59,50 @@ keymap("n", "<leader>e", ":Oil<Return>", opts)
 
 -- Molten
 vim.keymap.set("n", "<leader>ni", function()
-  vim.cmd("MoltenInit " .. (vim.env.NVIM_PYTHON_KERNEL or "python3"))
+    vim.cmd("MoltenInit " .. (vim.env.NVIM_PYTHON_KERNEL or "python3"))
 end, { desc = "Notebook init" })
 
 -- セル実行(カーソル位置の # %% セルをまるごと実行)
 vim.keymap.set("n", "<leader>nr", function()
-  require("notebook-navigator").run_cell()
+    require("notebook-navigator").run_cell()
 end, { desc = "Run cell" })
 
 -- 選択範囲に含まれるセルを、それぞれ独立したMolten出力として実行
 vim.keymap.set("x", "<leader>nr", function()
-  local notebook = require("notebook-navigator")
-  local first_line = math.min(vim.fn.line("v"), vim.fn.line("."))
-  local last_line = math.max(vim.fn.line("v"), vim.fn.line("."))
-  local original_cursor = vim.api.nvim_win_get_cursor(0)
+    local notebook = require("notebook-navigator")
+    local first_line = math.min(vim.fn.line("v"), vim.fn.line("."))
+    local last_line = math.max(vim.fn.line("v"), vim.fn.line("."))
+    local original_cursor = vim.api.nvim_win_get_cursor(0)
 
-  vim.api.nvim_win_set_cursor(0, { first_line, 0 })
+    vim.api.nvim_win_set_cursor(0, { first_line, 0 })
 
-  while true do
-    notebook.run_cell()
+    while true do
+        notebook.run_cell()
 
-    if notebook.move_cell("d") == "last" then
-      break
+        if notebook.move_cell("d") == "last" then
+            break
+        end
+
+        if vim.api.nvim_win_get_cursor(0)[1] > last_line then
+            break
+        end
     end
 
-    if vim.api.nvim_win_get_cursor(0)[1] > last_line then
-      break
-    end
-  end
-
-  vim.api.nvim_win_set_cursor(0, original_cursor)
+    vim.api.nvim_win_set_cursor(0, original_cursor)
 end, { desc = "Run selected cells" })
 
 -- セル実行して次のセルへ移動
 vim.keymap.set("n", "<leader>nx", function()
-  require("notebook-navigator").run_and_move()
+    require("notebook-navigator").run_and_move()
 end, { desc = "Run cell and move" })
 
 -- セル間移動
-vim.keymap.set("n", "]n", function() require("notebook-navigator").move_cell("d") end, { desc = "Next cell" })
-vim.keymap.set("n", "[n", function() require("notebook-navigator").move_cell("u") end, { desc = "Prev cell" })
+vim.keymap.set("n", "]n", function()
+    require("notebook-navigator").move_cell("d")
+end, { desc = "Next cell" })
+vim.keymap.set("n", "[n", function()
+    require("notebook-navigator").move_cell("u")
+end, { desc = "Prev cell" })
 
 -- 行・選択範囲はそのままMoltenでOK
 vim.keymap.set("n", "<leader>nl", ":MoltenEvaluateLine<CR>", { desc = "Evaluate line" })

@@ -39,7 +39,8 @@ map("n", "<leader>tt", "workbench.action.terminal.toggleTerminal", "Toggle termi
 
 ---VSCode右側のVim操作ガイドを開閉します。
 local function toggle_vim_cheatsheet()
-    vscode.eval_async([[
+    vscode.eval_async(
+        [[
         const panelKey = "__vscodeNeovimCheatsheet";
         const currentPanel = globalThis[panelKey];
 
@@ -69,9 +70,11 @@ local function toggle_vim_cheatsheet()
             }
         });
         panel.webview.html = args.html;
-    ]], {
-        args = { html = cheatsheet.to_html() },
-    })
+    ]],
+        {
+            args = { html = cheatsheet.to_html() },
+        }
+    )
 end
 
 vim.keymap.set("n", "<leader>?", toggle_vim_cheatsheet, {
