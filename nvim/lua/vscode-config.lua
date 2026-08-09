@@ -1,4 +1,5 @@
 local vscode = require("vscode")
+local cheatsheet = require("vim_cheatsheet_data")
 
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -17,6 +18,10 @@ local function action(command)
     end
 end
 
+---@param mode string|string[]
+---@param lhs string
+---@param command string
+---@param description string
 local function map(mode, lhs, command, description)
     vim.keymap.set(mode, lhs, action(command), {
         silent = true,
@@ -31,6 +36,48 @@ map("n", "<leader>fb", "workbench.action.showAllEditors", "Open editors")
 map("n", "<leader>e", "workbench.view.explorer", "Explorer")
 map("n", "<leader>bd", "workbench.action.closeActiveEditor", "Close editor")
 map("n", "<leader>tt", "workbench.action.terminal.toggleTerminal", "Toggle terminal")
+
+---VSCode右側のVim操作ガイドを開閉します。
+local function toggle_vim_cheatsheet()
+    vscode.eval_async([[
+        const panelKey = "__vscodeNeovimCheatsheet";
+        const currentPanel = globalThis[panelKey];
+
+        if (currentPanel) {
+            currentPanel.dispose();
+            globalThis[panelKey] = undefined;
+            return;
+        }
+
+        const panel = vscode.window.createWebviewPanel(
+            "vimCheatsheet",
+            "Vim操作ガイド",
+            {
+                viewColumn: vscode.ViewColumn.Beside,
+                preserveFocus: true,
+            },
+            {
+                enableScripts: false,
+                retainContextWhenHidden: true,
+            },
+        );
+
+        globalThis[panelKey] = panel;
+        panel.onDidDispose(() => {
+            if (globalThis[panelKey] === panel) {
+                globalThis[panelKey] = undefined;
+            }
+        });
+        panel.webview.html = args.html;
+    ]], {
+        args = { html = cheatsheet.to_html() },
+    })
+end
+
+vim.keymap.set("n", "<leader>?", toggle_vim_cheatsheet, {
+    silent = true,
+    desc = "Vim操作のチートシート",
+})
 
 -- VSCodeの言語機能へ接続します。
 map("n", "gd", "editor.action.revealDefinition", "Go to definition")
