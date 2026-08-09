@@ -47,6 +47,7 @@ require("options")
 require("keymaps")
 require("autocmds")
 require("mycommand")
+require("vim_cheatsheet")
 require("colorscheme")
 require("lsp")
 
