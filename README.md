@@ -32,16 +32,28 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 ```text
 .
 ├── herdr/
-│   └── config.toml
+│   ├── config.toml
+│   └── config.windows.toml
 ├── nvim/
 │   ├── init.lua
 │   ├── lazy-lock.json
 │   └── lua/
-│       ├── plugins/                # lazy.nvimのプラグイン定義
-│       ├── platform.lua            # OS・実行ファイル・パスの判定
-│       ├── vscode-config.lua       # VS Code Neovim専用設定
-│       ├── vim_cheatsheet.lua      # 通常Neovim用チートシート
-│       └── vim_cheatsheet_data.lua # 両環境で共有する表示内容
+│       ├── plugins/                 # lazy.nvimのプラグイン定義
+│       │   ├── core.lua             # UI、補完、LSPなどの基盤
+│       │   ├── dev.lua              # 開発・Git関連
+│       │   └── workspace.lua        # Notebook、Markdown、作業環境
+│       ├── autocmds.lua             # 自動コマンド
+│       ├── cmp-config.lua           # 補完設定
+│       ├── colorscheme.lua          # 配色設定
+│       ├── keymaps.lua              # 基本キーマップ
+│       ├── lsp.lua                  # 言語サーバー設定
+│       ├── mycommand.lua            # 独自コマンド
+│       ├── options.lua              # Neovimオプション
+│       ├── platform.lua             # OS・実行ファイル・パスの判定
+│       ├── plugins.lua              # プラグイン定義の入口
+│       ├── vscode-config.lua        # VS Code Neovim専用設定
+│       ├── vim_cheatsheet.lua       # 通常Neovim用チートシート
+│       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
 ├── stylua.toml
 └── README.md
 ```
@@ -60,11 +72,11 @@ $config = Join-Path $env:LOCALAPPDATA "nvim"
 $target = Join-Path $repo "nvim"
 New-Item -ItemType Junction -Path $config -Target $target
 
-$herdrConfig = Join-Path $repo "herdr\config.toml"
+$herdrConfig = Join-Path $repo "herdr\config.windows.toml"
 [Environment]::SetEnvironmentVariable("HERDR_CONFIG_PATH", $herdrConfig, "User")
 ```
 
-ジャンクションを作成するため、cloneしたリポジトリの変更がNeovim設定へ直接反映されます。Herdrを使わない場合、`HERDR_CONFIG_PATH`の設定は不要です。
+ジャンクションを作成するため、cloneしたリポジトリの変更がNeovim設定へ直接反映されます。Windows用のHerdr設定ではPowerShell 7（`pwsh`）を使用します。Herdrを使わない場合、`HERDR_CONFIG_PATH`の設定は不要です。
 
 ### WSL2／Linux
 
@@ -259,7 +271,7 @@ Windowsネイティブではimage.nvimを無効化し、テキスト出力を利
 
 ## Herdr
 
-共有する[Herdr](https://herdr.dev/)設定は、テーマなど環境に依存しにくい項目だけに限定しています。Herdrを利用しない場合、`herdr`ディレクトリは無視できます。
+Unix向けの`config.toml`は環境に依存しにくい共通項目だけを持ち、Windows向けの`config.windows.toml`はPowerShell 7を既定シェルに指定します。Herdrを利用しない場合、`herdr`ディレクトリは無視できます。
 
 設定変更後はHerdr内のメニュー、または次のコマンドで再読み込みできます。
 
