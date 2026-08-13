@@ -37,11 +37,22 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │   ├── init.lua
 │   ├── lazy-lock.json
 │   └── lua/
-│       ├── plugins/                # lazy.nvimのプラグイン定義
-│       ├── platform.lua            # OS・実行ファイル・パスの判定
-│       ├── vscode-config.lua       # VS Code Neovim専用設定
-│       ├── vim_cheatsheet.lua      # 通常Neovim用チートシート
-│       └── vim_cheatsheet_data.lua # 両環境で共有する表示内容
+│       ├── plugins/                 # lazy.nvimのプラグイン定義
+│       │   ├── core.lua             # UI、補完、LSPなどの基盤
+│       │   ├── dev.lua              # 開発・Git関連
+│       │   └── workspace.lua        # Notebook、Markdown、作業環境
+│       ├── autocmds.lua             # 自動コマンド
+│       ├── cmp-config.lua           # 補完設定
+│       ├── colorscheme.lua          # 配色設定
+│       ├── keymaps.lua              # 基本キーマップ
+│       ├── lsp.lua                  # 言語サーバー設定
+│       ├── mycommand.lua            # 独自コマンド
+│       ├── options.lua              # Neovimオプション
+│       ├── platform.lua             # OS・実行ファイル・パスの判定
+│       ├── plugins.lua              # プラグイン定義の入口
+│       ├── vscode-config.lua        # VS Code Neovim専用設定
+│       ├── vim_cheatsheet.lua       # 通常Neovim用チートシート
+│       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
 ├── stylua.toml
 └── README.md
 ```
