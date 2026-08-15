@@ -35,7 +35,9 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │   ├── config.toml
 │   ├── config.windows.toml
 │   └── plugins/                     # ローカルHerdrプラグイン
-│       └── btop-sidebar/
+│       └── btop-sidebar/             # btopペインの開閉
+│           ├── herdr-plugin.toml
+│           └── bin/btop-sidebar.sh
 ├── nvim/
 │   ├── init.lua
 │   ├── lazy-lock.json
@@ -92,6 +94,9 @@ ln -s ~/dotfile/nvim ~/.config/nvim
 # Herdrを使う場合だけ実行します。
 mkdir -p ~/.config/herdr
 ln -s ~/dotfile/herdr/config.toml ~/.config/herdr/config.toml
+
+# btopペインを使う場合だけ実行します。
+herdr plugin link ~/dotfile/herdr/plugins/btop-sidebar
 ```
 
 Windows側とWSL側では、それぞれリポジトリをcloneし、Git経由で同期する運用を想定しています。WSLからWindows側のリポジトリを直接参照すると、ファイルシステム性能や実行ファイルの違いで問題が起きることがあります。
@@ -274,6 +279,8 @@ Windowsネイティブではimage.nvimを無効化し、テキスト出力を利
 ## Herdr
 
 Unix向けの`config.toml`は環境に依存しにくい共通項目だけを持ち、Windows向けの`config.windows.toml`はPowerShell 7を既定シェルに指定します。Herdrを利用しない場合、`herdr`ディレクトリは無視できます。
+
+Linuxで`btop`と`python3`が利用できる場合、`btop-sidebar`プラグインで現在のワークスペース下部にbtopを表示できます。`Ctrl+B`を押して離し、`Shift+B`を押すと開閉できます。開いても元のペインからフォーカスは移動しません。Windowsではこのプラグインは動作しません。
 
 設定変更後はHerdr内のメニュー、または次のコマンドで再読み込みできます。
 

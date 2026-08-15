@@ -3,3 +3,9 @@ onboarding = false
 [theme]
 name = "tokyo-night"
 auto_switch = false
+
+[[keys.command]]
+key = "prefix+shift+b"
+type = "plugin_action"
+command = "local.btop-sidebar.toggle"
+description = "toggle btop pane"

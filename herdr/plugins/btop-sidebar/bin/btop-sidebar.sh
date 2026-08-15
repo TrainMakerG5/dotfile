@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Herdrの復元完了直後に下側へbtopペインを一度だけ作成します。
+# Herdrの現在のワークスペースでbtopペインを開閉します。
 set -eu
 
 if ! command -v herdr >/dev/null 2>&1 || ! command -v btop >/dev/null 2>&1; then
@@ -66,23 +66,45 @@ if [ -z "$layout_info" ]; then
     exit 0
 fi
 
-# 同じワークスペースに既存のbtopペインがあれば重複作成しません。
-if herdr pane list 2>/dev/null | python3 -c '
+# 同じワークスペースのbtopペインを探します。
+existing_btop_pane=$(herdr pane list 2>/dev/null | python3 -c '
 import json
 import sys
 
 workspace_id = sys.argv[1]
 panes = json.load(sys.stdin).get("result", {}).get("panes", [])
-exists = any(
-    pane.get("workspace_id") == workspace_id
-    and (
+pane_id = next(
+    (
+        pane.get("pane_id", "")
+        for pane in panes
+        if pane.get("workspace_id") == workspace_id
+        and (
         pane.get("label") == "btop"
         or pane.get("terminal_title_stripped", "").lower() == "btop"
-    )
-    for pane in panes
+        )
+    ),
+    "",
 )
-raise SystemExit(0 if exists else 1)
-' "$workspace_id"; then
+print(pane_id)
+' "$workspace_id")
+
+if [ -n "$existing_btop_pane" ]; then
+    # ラベルだけ残ったペインは、新規分割せずbtopを再起動します。
+    if herdr pane process-info --pane "$existing_btop_pane" 2>/dev/null | python3 -c '
+import json
+import sys
+
+processes = json.load(sys.stdin).get("result", {}).get("process_info", {}).get(
+    "foreground_processes", []
+)
+running = any(process.get("name", "").lower() == "btop" for process in processes)
+raise SystemExit(0 if running else 1)
+'; then
+        herdr pane close "$existing_btop_pane" >/dev/null
+        exit 0
+    fi
+
+    herdr pane run "$existing_btop_pane" btop >/dev/null
     exit 0
 fi
 

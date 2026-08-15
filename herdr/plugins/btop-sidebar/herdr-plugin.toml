@@ -2,8 +2,11 @@ id = "local.btop-sidebar"
 name = "btop Sidebar"
 version = "0.1.0"
 min_herdr_version = "0.7.5"
-description = "Open btop in a bottom pane after Herdr restores its session."
+description = "Toggle btop in a bottom pane."
 platforms = ["linux"]
 
-[[startup]]
+[[actions]]
+id = "toggle"
+title = "Toggle btop pane"
+contexts = ["workspace"]
 command = ["sh", "bin/btop-sidebar.sh"]
