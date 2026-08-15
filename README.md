@@ -33,7 +33,9 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 .
 ├── herdr/
 │   ├── config.toml
-│   └── config.windows.toml
+│   ├── config.windows.toml
+│   └── plugins/                     # ローカルHerdrプラグイン
+│       └── btop-sidebar/
 ├── nvim/
 │   ├── init.lua
 │   ├── lazy-lock.json

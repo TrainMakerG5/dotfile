@@ -1,0 +1,9 @@
+id = "local.btop-sidebar"
+name = "btop Sidebar"
+version = "0.1.0"
+min_herdr_version = "0.7.5"
+description = "Open btop in a bottom pane after Herdr restores its session."
+platforms = ["linux"]
+
+[[startup]]
+command = ["sh", "bin/btop-sidebar.sh"]
