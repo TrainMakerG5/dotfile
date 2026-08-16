@@ -58,11 +58,39 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │       ├── vscode-config.lua        # VS Code Neovim専用設定
 │       ├── vim_cheatsheet.lua       # 通常Neovim用チートシート
 │       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
+├── install.sh                        # Linux／WSL用のセットアップと診断
 ├── stylua.toml
 └── README.md
 ```
 
-## インストール
+## クイックスタート
+
+この設定は既存のNeovim／Herdr設定を自動では上書きしません。先に既存設定をバックアップしてから利用してください。
+
+### WSL2／Linux
+
+```bash
+git clone https://github.com/TrainMakerG5/dotfile.git ~/dotfile
+cd ~/dotfile
+./install.sh
+```
+
+インストーラーは次の処理を行います。
+
+- `~/.config/nvim`からリポジトリ内のNeovim設定へシンボリックリンクを作成
+- `~/.config/herdr/config.toml`からリポジトリ内のHerdr設定へシンボリックリンクを作成
+- Herdrが利用できる場合、`btop-sidebar`を`herdr plugin link`で個別登録
+- 外部コマンドの導入状況を表示
+
+既存ファイルや既存ディレクトリがある場合は何も上書きせず、対応が必要なパスを表示して終了します。設定を変更せず現在の状態だけを確認する場合は、次を実行してください。
+
+```bash
+./install.sh --check
+```
+
+### 手動インストール
+
+自動インストーラーを使わない場合、または処理内容を個別に管理したい場合は、以下の手順を利用してください。
 
 ### Windows PowerShell
 
@@ -82,7 +110,7 @@ $herdrConfig = Join-Path $repo "herdr\config.windows.toml"
 
 ジャンクションを作成するため、cloneしたリポジトリの変更がNeovim設定へ直接反映されます。Windows用のHerdr設定ではPowerShell 7（`pwsh`）を使用します。Herdrを使わない場合、`HERDR_CONFIG_PATH`の設定は不要です。
 
-### WSL2／Linux
+### WSL2／Linux（手動）
 
 既存の`~/.config/nvim`がある場合は、先に別の場所へ移動してください。
 
@@ -99,9 +127,38 @@ ln -s ~/dotfile/herdr/config.toml ~/.config/herdr/config.toml
 herdr plugin link ~/dotfile/herdr/plugins/btop-sidebar
 ```
 
+`~/.config/herdr/plugins`ディレクトリ全体をリポジトリへリンクしても、Herdrにはプラグインとして登録されません。ローカルプラグインは必ず`herdr plugin link`で個別に登録してください。
+
 Windows側とWSL側では、それぞれリポジトリをcloneし、Git経由で同期する運用を想定しています。WSLからWindows側のリポジトリを直接参照すると、ファイルシステム性能や実行ファイルの違いで問題が起きることがあります。
 
 初回起動時にlazy.nvimと各プラグインがダウンロードされます。
+
+## 更新
+
+リポジトリを更新したあと、リンク済みの設定ファイルには変更がそのまま反映されます。
+
+```bash
+cd ~/dotfile
+git pull --ff-only
+./install.sh --check
+```
+
+Neovimプラグインは`lazy-lock.json`のバージョンに従います。Neovim内で`:Lazy sync`を実行すると、未導入プラグインの取得とロック済みバージョンへの同期が行われます。Masonが管理するLSPやフォーマッタ、Herdrのセッション、認証情報はGitでは同期されないため、各環境で個別に用意してください。
+
+## トラブルシューティング
+
+### Herdrプラグインが表示されない
+
+```bash
+herdr plugin list
+herdr plugin action list
+```
+
+一覧に`local.btop-sidebar`がなければ、リポジトリ直下で`./install.sh`を再実行してください。登録後もキー操作が反映されない場合はHerdrを再起動してください。
+
+### Neovimプラグインが読み込まれない
+
+`nvim --version`でNeovim 0.11.3以上であることを確認し、Neovim内で`:Lazy health`と`:Lazy sync`を実行してください。VS Code Neovimでは通常のNeovimプラグインを意図的に読み込まず、`vscode-config.lua`だけを利用します。
 
 ## 基本ツール
 
@@ -294,3 +351,7 @@ herdr server reload-config
 - LSPやフォーマッタの実行ファイルは、この設定をcloneしただけでは導入されません。
 - 秘密情報、トークン、秘密鍵、端末固有の絶対パスはcommitしないでください。
 - 外部スクリプトやインストールコマンドは、実行前にリンク先と内容を確認してください。
+
+## ライセンス
+
+このリポジトリは[MIT License](LICENSE)で公開しています。
