@@ -58,6 +58,7 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │       ├── vscode-config.lua        # VS Code Neovim専用設定
 │       ├── vim_cheatsheet.lua       # 通常Neovim用チートシート
 │       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
+├── install.ps1                       # Windows用のセットアップと診断
 ├── install.sh                        # Linux／WSL用のセットアップと診断
 ├── stylua.toml
 └── README.md
@@ -67,6 +68,16 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 
 この設定は既存のNeovim／Herdr設定を自動では上書きしません。先に既存設定をバックアップしてから利用してください。
 
+### Windows PowerShell
+
+```powershell
+git clone https://github.com/TrainMakerG5/dotfile.git "$env:USERPROFILE\dotfile"
+Set-Location "$env:USERPROFILE\dotfile"
+.\install.ps1
+```
+
+設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行してください。Windows版はNeovim設定のジャンクションと、Windows用Herdr設定を指すユーザー環境変数`HERDR_CONFIG_PATH`を登録します。
+
 ### WSL2／Linux
 
 ```bash
@@ -75,7 +86,7 @@ cd ~/dotfile
 ./install.sh
 ```
 
-インストーラーは次の処理を行います。
+Linux／WSL版インストーラーは次の処理を行います。
 
 - `~/.config/nvim`からリポジトリ内のNeovim設定へシンボリックリンクを作成
 - `~/.config/herdr/config.toml`からリポジトリ内のHerdr設定へシンボリックリンクを作成
@@ -87,6 +98,8 @@ cd ~/dotfile
 ```bash
 ./install.sh --check
 ```
+
+どちらのインストーラーも、既存の設定や別の設定先を自動では上書きしません。
 
 ### 手動インストール
 
@@ -141,6 +154,14 @@ Windows側とWSL側では、それぞれリポジトリをcloneし、Git経由�
 cd ~/dotfile
 git pull --ff-only
 ./install.sh --check
+```
+
+WindowsではPowerShellから次を実行します。
+
+```powershell
+Set-Location "$env:USERPROFILE\dotfile"
+git pull --ff-only
+.\install.ps1 -Check
 ```
 
 Neovimプラグインは`lazy-lock.json`のバージョンに従います。Neovim内で`:Lazy sync`を実行すると、未導入プラグインの取得とロック済みバージョンへの同期が行われます。Masonが管理するLSPやフォーマッタ、Herdrのセッション、認証情報はGitでは同期されないため、各環境で個別に用意してください。
