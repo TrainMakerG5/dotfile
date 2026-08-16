@@ -73,28 +73,48 @@ function Set-NeovimJunction {
     Write-Info "Neovim設定をジャンクションとして登録しました。"
 }
 
-function Set-HerdrConfig {
-    param([string]$ConfigPath)
+function Set-HerdrConfigLink {
+    param(
+        [string]$Source,
+        [string]$Target
+    )
 
-    $currentPath = [Environment]::GetEnvironmentVariable("HERDR_CONFIG_PATH", "User")
-    if (-not [string]::IsNullOrWhiteSpace($currentPath)) {
-        if (Test-SamePath -First $currentPath -Second $ConfigPath) {
-            Write-Info "HERDR_CONFIG_PATHは設定済みです。"
+    $legacyPath = [Environment]::GetEnvironmentVariable("HERDR_CONFIG_PATH", "User")
+    if (-not [string]::IsNullOrWhiteSpace($legacyPath) -and
+        -not (Test-SamePath -First $legacyPath -Second $Source)) {
+        Write-Failure "HERDR_CONFIG_PATHには別のパスが設定されています: $legacyPath"
+        return
+    }
+
+    if (Test-Path -LiteralPath $Target) {
+        $item = Get-Item -LiteralPath $Target -Force
+        $linkTarget = @($item.Target)[0]
+        if ($null -eq $linkTarget -or -not (Test-SamePath -First $linkTarget -Second $Source)) {
+            Write-Failure "$Target が既にあります。バックアップまたは削除してから再実行してください。"
             return
         }
 
-        Write-Failure "HERDR_CONFIG_PATHには別のパスが設定されています: $currentPath"
+        Write-Info "Herdr設定はシンボリックリンクとして登録済みです。"
+    } elseif ($Check) {
+        Write-Failure "Herdr設定のシンボリックリンクは未登録です。"
         return
+    } else {
+        $parent = Split-Path -Parent $Target
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+        New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
+        Write-Info "Herdr設定をシンボリックリンクとして登録しました。"
     }
 
-    if ($Check) {
-        Write-Failure "HERDR_CONFIG_PATHは未設定です。"
-        return
-    }
+    if (-not [string]::IsNullOrWhiteSpace($legacyPath)) {
+        if ($Check) {
+            Write-WarningMessage "旧HERDR_CONFIG_PATHも同じ設定を指しています。通常実行で解除できます。"
+            return
+        }
 
-    [Environment]::SetEnvironmentVariable("HERDR_CONFIG_PATH", $ConfigPath, "User")
-    $env:HERDR_CONFIG_PATH = $ConfigPath
-    Write-Info "HERDR_CONFIG_PATHをユーザー環境変数へ登録しました。"
+        [Environment]::SetEnvironmentVariable("HERDR_CONFIG_PATH", $null, "User")
+        Remove-Item Env:HERDR_CONFIG_PATH -ErrorAction SilentlyContinue
+        Write-Info "旧HERDR_CONFIG_PATHを解除しました。"
+    }
 }
 
 function Test-CommandAvailable {
@@ -103,7 +123,16 @@ function Test-CommandAvailable {
         [string]$Requirement
     )
 
-    $command = Get-Command $Name -ErrorAction SilentlyContinue
+    $currentPath = $env:Path
+    try {
+        $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+        $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+        $env:Path = [Environment]::ExpandEnvironmentVariables("$machinePath;$userPath")
+        $command = Get-Command $Name -ErrorAction SilentlyContinue
+    } finally {
+        $env:Path = $currentPath
+    }
+
     if ($null -ne $command) {
         Write-Info "${Name}: $($command.Source)"
     } else {
@@ -114,14 +143,15 @@ function Test-CommandAvailable {
 $repoDirectory = $PSScriptRoot
 $neovimSource = Join-Path $repoDirectory "nvim"
 $neovimTarget = Join-Path $env:LOCALAPPDATA "nvim"
-$herdrConfig = Join-Path $repoDirectory "herdr\config.windows.toml"
+$herdrSource = Join-Path $repoDirectory "herdr\config.windows.toml"
+$herdrTarget = Join-Path $env:APPDATA "herdr\config.toml"
 
 Write-Host "dotfile setup for Windows"
 Write-Host "Repository: $repoDirectory"
 
 Write-Host "`n設定"
 Set-NeovimJunction -Source $neovimSource -Target $neovimTarget
-Set-HerdrConfig -ConfigPath $herdrConfig
+Set-HerdrConfigLink -Source $herdrSource -Target $herdrTarget
 
 Write-Host "`n依存コマンド"
 Test-CommandAvailable -Name "git" -Requirement "Neovimプラグインの取得に必須です"

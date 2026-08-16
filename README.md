@@ -76,7 +76,7 @@ Set-Location "$env:USERPROFILE\dotfile"
 .\install.ps1
 ```
 
-設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行してください。Windows版はNeovim設定のジャンクションと、Windows用Herdr設定を指すユーザー環境変数`HERDR_CONFIG_PATH`を登録します。
+設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行してください。Windows版はNeovim設定のジャンクションと、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録します。
 
 ### WSL2／Linux
 
@@ -117,11 +117,14 @@ $config = Join-Path $env:LOCALAPPDATA "nvim"
 $target = Join-Path $repo "nvim"
 New-Item -ItemType Junction -Path $config -Target $target
 
-$herdrConfig = Join-Path $repo "herdr\config.windows.toml"
-[Environment]::SetEnvironmentVariable("HERDR_CONFIG_PATH", $herdrConfig, "User")
+$herdrDirectory = Join-Path $env:APPDATA "herdr"
+$herdrConfig = Join-Path $herdrDirectory "config.toml"
+$herdrTarget = Join-Path $repo "herdr\config.windows.toml"
+New-Item -ItemType Directory -Path $herdrDirectory -Force
+New-Item -ItemType SymbolicLink -Path $herdrConfig -Target $herdrTarget
 ```
 
-ジャンクションを作成するため、cloneしたリポジトリの変更がNeovim設定へ直接反映されます。Windows用のHerdr設定ではPowerShell 7（`pwsh`）を使用します。Herdrを使わない場合、`HERDR_CONFIG_PATH`の設定は不要です。
+リンクを作成するため、cloneしたリポジトリの変更がNeovimとHerdrへ直接反映されます。Windows用のHerdr設定ではPowerShell 7（`pwsh`）を使用します。Herdrを使わない場合、Herdr設定のリンクは不要です。
 
 ### WSL2／Linux（手動）
 
