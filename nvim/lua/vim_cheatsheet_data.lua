@@ -63,12 +63,13 @@ M.sections = {
     },
 }
 
----端末表示用の行一覧を生成します。
+---@param first integer
+---@param last integer
 ---@return string[]
-function M.to_lines()
-    local lines = { " VIM EDITING CHEATSHEET", "" }
-
-    for _, section in ipairs(M.sections) do
+local function render_sections(first, last)
+    local lines = {}
+    for index = first, last do
+        local section = M.sections[index]
         table.insert(lines, " " .. section.title)
         for _, item in ipairs(section.items) do
             local padding = string.rep(" ", math.max(1, 16 - vim.fn.strdisplaywidth(item[1])))
@@ -77,7 +78,63 @@ function M.to_lines()
         table.insert(lines, "")
     end
 
-    table.insert(lines, "   <leader>? で閉じる")
+    return lines
+end
+
+---端末表示用の行一覧を生成します。
+---@return string[]
+function M.to_lines()
+    local lines = { " VIM EDITING CHEATSHEET", "" }
+    vim.list_extend(lines, render_sections(1, #M.sections))
+
+    table.insert(lines, "   <leader>? / q で閉じる")
+    return lines
+end
+
+---@param first integer
+---@param last integer
+---@return integer
+local function sections_height(first, last)
+    local height = 0
+    for index = first, last do
+        height = height + #M.sections[index].items + 2
+    end
+    return height
+end
+
+---@param value string
+---@param width integer
+---@return string
+local function pad_display(value, width)
+    return value .. string.rep(" ", math.max(0, width - vim.fn.strdisplaywidth(value)))
+end
+
+---端末の横幅に余裕がある場合の2列表示を生成します。
+---@param column_width integer
+---@return string[]
+function M.to_two_column_lines(column_width)
+    local split = 1
+    local smallest_difference = math.huge
+    for index = 1, #M.sections - 1 do
+        local left_height = sections_height(1, index)
+        local right_height = sections_height(index + 1, #M.sections)
+        local difference = math.abs(left_height - right_height)
+        if difference < smallest_difference then
+            split = index
+            smallest_difference = difference
+        end
+    end
+
+    local left = render_sections(1, split)
+    local right = render_sections(split + 1, #M.sections)
+    local lines = { " VIM EDITING CHEATSHEET", "" }
+    for index = 1, math.max(#left, #right) do
+        local left_line = left[index] or ""
+        local right_line = right[index] or ""
+        table.insert(lines, pad_display(left_line, column_width) .. "  " .. right_line)
+    end
+
+    table.insert(lines, "   <leader>? / q で閉じる")
     return lines
 end
 
