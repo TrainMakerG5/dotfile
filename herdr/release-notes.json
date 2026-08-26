@@ -1,0 +1,5 @@
+{
+  "version": "0.8.2-preview.2026-08-19-b5c4a0176e91",
+  "body": "Preview build 2026-08-19-b5c4a0176e91\n\nBuilt from `b5c4a0176e91` on `master`.\nBase stable: v0.8.2\nCompare: https://github.com/herdrdev/herdr/compare/v0.8.2...b5c4a0176e9183924df552eb8aecb94ed5f9e732\n\n### Changed\n- Rebuilt preview from the current master branch.",
+  "show_on_startup": true
+}
