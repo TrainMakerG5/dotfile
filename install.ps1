@@ -101,7 +101,12 @@ function Set-HerdrConfigLink {
     } else {
         $parent = Split-Path -Parent $Target
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
-        New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
+        try {
+            New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
+        } catch {
+            Write-Failure "Herdr設定のシンボリックリンクを作成できませんでした。Windowsの開発者モードを有効にするか、管理者PowerShellで再実行してください。"
+            return
+        }
         Write-Info "Herdr設定をシンボリックリンクとして登録しました。"
     }
 

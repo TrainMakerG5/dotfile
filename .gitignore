@@ -8,8 +8,11 @@ gh/hosts.yml
 **/automatic_backups/
 calyx/browser.json
 flutter/tool_state
+herdr/release-notes.json
 wireshark/recent*
 
 # Generated caches
-**/*cache*
+**/.cache/
+**/cache/
+**/__pycache__/
 

@@ -1,6 +1,5 @@
--- Language servers used across the development environments on this machine.
--- Dart is started by flutter-tools.nvim, so enabling dartls here as well
--- would create a duplicate client.
+-- このマシンの開発環境で使う言語サーバーを有効にします。
+-- Dartはflutter-tools.nvimが起動するため、重複を避けてここではdartlsを有効にしません。
 vim.lsp.enable({
     "pyright", -- Python
     "ts_ls", -- JavaScript / TypeScript
@@ -15,7 +14,7 @@ vim.lsp.config("pyright", {
     settings = {
         python = {
             analysis = {
-                -- Keep library code (including pandas) indexed and diagnosed.
+                -- pandasなどのライブラリコードもインデックスと診断の対象にします。
                 autoImportCompletions = true,
                 diagnosticMode = "workspace",
                 typeCheckingMode = "basic",

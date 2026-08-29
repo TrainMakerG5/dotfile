@@ -7,7 +7,7 @@ try
 endtry
 ]])
 
--- 背景透過設定（Lua方式）
+-- 主要なハイライトグループの背景を透過させます。
 local highlights = {
     "Normal",
     "NonText",
@@ -15,7 +15,7 @@ local highlights = {
     "SignColumn",
     "EndOfBuffer",
     "highlight",
-    --Neotree
+    -- Neo-treeの背景も同じように透過させます。
     "NeoTreeNormal",
     "NeoTreeNormalNC",
     "NeoTreeCursorLine",

@@ -16,12 +16,16 @@ if vim.g.vscode then
 end
 
 -- =========================
--- bootstrap lazy.nvim
+-- lazy.nvimをセットアップします。
 -- =========================
 local lazypath = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy", "lazy.nvim")
 
 if not vim.uv.fs_stat(lazypath) then
-    vim.fn.system({
+    if vim.fn.executable("git") ~= 1 then
+        error("lazy.nvimを取得できません。GitがPATHにあるか確認してください。")
+    end
+
+    local output = vim.fn.system({
         "git",
         "clone",
         "--filter=blob:none",
@@ -29,19 +33,23 @@ if not vim.uv.fs_stat(lazypath) then
         "--branch=stable",
         lazypath,
     })
+
+    if vim.v.shell_error ~= 0 or not vim.uv.fs_stat(lazypath) then
+        error("lazy.nvimの取得に失敗しました。\n" .. output)
+    end
 end
 
 vim.opt.rtp:prepend(lazypath)
 
 -- =========================
--- core plugin loader
+-- プラグイン定義を読み込みます。
 -- =========================
 require("lazy").setup("plugins", {
     defaults = { lazy = true },
 })
 
 -- =========================
--- 自前設定（lazyの後）
+-- lazy.nvimの初期化後に独自設定を読み込みます。
 -- =========================
 require("options")
 require("keymaps")
@@ -51,7 +59,7 @@ require("vim_cheatsheet")
 require("colorscheme")
 require("lsp")
 
--- Neovide
+-- Neovideでは背景を半透明にします。
 if vim.g.neovide then
     vim.g.neovide_opacity = 0.7
 end

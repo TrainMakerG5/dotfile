@@ -60,6 +60,7 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
 ├── install.ps1                       # Windows用のセットアップと診断
 ├── install.sh                        # Linux／WSL用のセットアップと診断
+├── .gitattributes                    # OS間の改行コードを統一
 ├── stylua.toml
 └── README.md
 ```
@@ -77,6 +78,8 @@ Set-Location "$env:USERPROFILE\dotfile"
 ```
 
 設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行してください。Windows版はNeovim設定のジャンクションと、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録します。
+
+Herdr設定のシンボリックリンク作成に失敗する場合は、Windowsの開発者モードを有効にするか、管理者PowerShellでインストーラーを再実行してください。
 
 ### WSL2／Linux
 
@@ -355,7 +358,7 @@ Windowsネイティブではimage.nvimを無効化し、テキスト出力を利
 | `:Ap` | `test.txt`を標準入力としてPythonを実行 |
 | `:MemoPush` / `:DailyPush` | 対象ディレクトリを確認後、commitしてpush |
 
-これらは作者のワークフロー向け機能です。不要な場合は`mycommand.lua`と`autocmds.lua`から削除してください。`:MemoPush`と`:DailyPush`は、実行前に確認ダイアログを表示します。
+これらは作者のワークフロー向け機能です。不要な場合は`mycommand.lua`と`autocmds.lua`から削除してください。`:MemoPush`と`:DailyPush`は、実行前に確認ダイアログを表示します。`:MemoPush`は`secretmemo.md`をGitへ追加しませんが、メモ用リポジトリの`.gitignore`でも除外することを推奨します。
 
 ## Herdr
 

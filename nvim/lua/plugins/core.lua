@@ -2,14 +2,14 @@ local platform = require("platform")
 
 return {
     -- =========================
-    -- Utility
+    -- 共通ユーティリティ
     -- =========================
     {
         "nvim-lua/plenary.nvim",
     },
 
     -- =========================
-    -- Colorscheme
+    -- カラースキーム
     -- =========================
     {
         "EdenEast/nightfox.nvim",
@@ -39,7 +39,7 @@ return {
         version = "*",
         dependencies = {
             "nvim-lua/plenary.nvim",
-            -- optional but recommended
+            -- ビルド可能な環境では検索を高速化します。
             {
                 "nvim-telescope/telescope-fzf-native.nvim",
                 cond = platform.fzf_build ~= nil,
@@ -55,10 +55,20 @@ return {
         build = ":TSUpdate",
         event = { "BufReadPost", "BufNewFile" },
     },
-    { "windwp/nvim-ts-autotag", event = { "BufReadPost", "BufNewFile" } },
+    {
+        "windwp/nvim-ts-autotag",
+        event = { "BufReadPre", "BufNewFile" },
+        opts = {
+            opts = {
+                enable_close = true,
+                enable_rename = true,
+                enable_close_on_slash = false,
+            },
+        },
+    },
 
     -- =========================
-    -- Auto pairs
+    -- 括弧の自動補完
     -- =========================
     {
         "windwp/nvim-autopairs",
@@ -71,11 +81,12 @@ return {
     -- =========================
     {
         "hrsh7th/nvim-cmp",
-        event = "InsertEnter",
+        event = { "InsertEnter", "CmdlineEnter" },
         dependencies = {
             "hrsh7th/cmp-buffer",
             "hrsh7th/cmp-path",
             "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-cmdline",
             "saadparwaiz1/cmp_luasnip",
             "L3MON4D3/LuaSnip",
         },
@@ -83,10 +94,8 @@ return {
             require("cmp-config")
         end,
     },
-    { "hrsh7th/cmp-cmdline", event = "CmdlineEnter" },
-
     -- =========================
-    -- LSP core
+    -- LSP基盤
     -- =========================
     {
         "neovim/nvim-lspconfig",
@@ -102,7 +111,7 @@ return {
             })
             vim.lsp.enable("marksman")
 
-            -- Individual servers are configured and enabled in lua/lsp.lua.
+            -- 個別の言語サーバーはlua/lsp.luaで設定・有効化します。
         end,
     },
     {
@@ -113,12 +122,11 @@ return {
     },
 
     -- =========================
-    -- Mason (installer)
+    -- Mason（開発ツールの導入）
     -- =========================
     {
         "williamboman/mason.nvim",
-        -- Mason prepends its bin directory to PATH. Loading it only on :Mason
-        -- leaves every Mason-managed LSP "not executable" during normal editing.
+        -- Masonのbinディレクトリを通常編集中もPATHに追加するため、常時読み込みます。
         lazy = false,
         config = true,
     },
@@ -128,7 +136,7 @@ return {
     },
 
     -- =========================
-    -- Markdown preview
+    -- Markdownプレビュー
     -- =========================
     {
         "ellisonleao/glow.nvim",
@@ -137,7 +145,7 @@ return {
     },
 
     -- =========================
-    -- Color highlight
+    -- 色コードの強調表示
     -- =========================
     {
         "NvChad/nvim-colorizer.lua",
@@ -146,7 +154,7 @@ return {
     },
 
     -- ========================
-    -- format
+    -- フォーマット
     -- ========================
     {
         "stevearc/conform.nvim",
@@ -176,19 +184,14 @@ return {
         "romgrk/barbar.nvim",
         event = { "BufReadPost", "BufNewFile" },
         dependencies = {
-            "lewis6991/gitsigns.nvim", -- OPTIONAL: for git status
-            "nvim-tree/nvim-web-devicons", -- OPTIONAL: for file icons
+            "lewis6991/gitsigns.nvim", -- Gitの変更状態を表示します。
+            "nvim-tree/nvim-web-devicons", -- ファイルアイコンを表示します。
         },
         init = function()
             vim.g.barbar_auto_setup = false
         end,
-        opts = {
-            -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
-            -- animation = true,
-            -- insert_at_start = true,
-            -- …etc.
-        },
-        version = "^1.0.0", -- optional: only update when a new 1.x version is released
+        opts = {},
+        version = "^1.0.0", -- 1.x系の範囲で更新します。
     },
     {
         "nvim-lualine/lualine.nvim",

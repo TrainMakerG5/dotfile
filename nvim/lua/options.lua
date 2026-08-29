@@ -70,8 +70,8 @@ local options = {
     background = "dark",
     scrolloff = 8,
     sidescrolloff = 8,
-    splitbelow = true, -- オンのとき、ウィンドウを横分割すると新しいウィンドウはカレントウィンドウの下に開かれる
-    splitright = true, -- オのとき、ウィンドウを縦分割すると新しいウィンドウはカレントウィンドウの右に開かれる
+    splitbelow = true, -- 横分割で新しいウィンドウを下に開きます。
+    splitright = true, -- 縦分割で新しいウィンドウを右に開きます。
 }
 
 vim.opt.shortmess:append("c")
@@ -85,5 +85,4 @@ if vim.fn.has("win32") == 0 and vim.fn.executable("zsh") == 1 then
     vim.opt.shell = vim.fn.exepath("zsh")
 end
 
-vim.cmd([[set iskeyword+=-]])
-vim.cmd([[set formatoptions-=cro]]) -- TODO: this doesn't seem to work
+vim.opt.iskeyword:append("-")

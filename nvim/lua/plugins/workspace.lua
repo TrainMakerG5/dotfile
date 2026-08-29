@@ -2,20 +2,19 @@ local platform = require("platform")
 
 return {
     -- =========================
-    -- 画像・図表表示 (Windowsでは無効化: MSVC/hererocks問題を回避)
+    -- 画像・図表表示（WindowsではMSVC/hererocksの問題を避けるため無効にします）
     -- =========================
     {
         "3rd/image.nvim",
         cond = platform.image_support,
-        -- magick_cli uses the system ImageMagick binary and does not need LuaRocks.
+        -- magick_cliはOSのImageMagickを使うため、LuaRocksは不要です。
         build = false,
         opts = {
-            -- Ghostty supports the Kitty graphics protocol.  Keep both the backend
-            -- and processor explicit so Molten does not depend on auto-detection.
+            -- 自動判定に依存しないよう、Kitty graphicsとImageMagickを明示します。
             backend = "kitty",
             processor = "magick_cli",
             integrations = {},
-            -- Molten のグラフを十分な大きさで表示する
+            -- Moltenのグラフを十分な大きさで表示します。
             max_width = 120,
             max_height = 30,
             max_width_window_percentage = math.huge,
@@ -27,21 +26,20 @@ return {
     {
         "benlubas/molten-nvim",
         dependencies = platform.image_support and { "3rd/image.nvim" } or nil,
-        -- Molten is a Python remote plugin. Lazy-loading its commands can remove
-        -- the registered command while the kernel-selection prompt is open.
+        -- MoltenはPythonのリモートプラグインのため、コマンドを安定して登録するよう常時読み込みます。
         lazy = false,
         build = ":UpdateRemotePlugins",
         init = function()
             vim.g.molten_auto_open_output = false
             vim.g.molten_output_win_max_height = 30
-            -- 出力ウィンドウと画像が本文を覆わないよう、そのぶんの行を確保する
+            -- 出力ウィンドウと画像が本文を覆わないよう、必要な行を確保します。
             vim.g.molten_output_virt_lines = true
             vim.g.molten_virt_text_output = true
             vim.g.molten_virt_text_max_lines = 30
             vim.g.molten_image_location = "both"
-            -- Herdr does not reliably forward Kitty graphics; use the macOS image viewer there.
+            -- Herdr内ではKitty graphicsの転送が安定しないため、画像ポップアップを自動で開きます。
             vim.g.molten_auto_image_popup = vim.env.HERDR_ENV == "1"
-            -- Windowsではimage.nvimを使わない（未ロードのため）
+            -- Windowsではimage.nvimを読み込まないため、画像プロバイダーも設定しません。
             if platform.image_support then
                 vim.g.molten_image_provider = "image.nvim"
             end
@@ -119,7 +117,7 @@ return {
     {
         "Bekaboo/dropbar.nvim",
         event = { "LspAttach", "BufReadPost" },
-        -- optional, but required for fuzzy finder support
+        -- ファジー検索を使うためTelescopeを利用します。
         dependencies = { "nvim-telescope/telescope.nvim" },
         config = function()
             local dropbar_api = require("dropbar.api")
@@ -132,9 +130,7 @@ return {
         "nvimdev/dashboard-nvim",
         event = "VimEnter",
         config = function()
-            require("dashboard").setup({
-                -- config
-            })
+            require("dashboard").setup({})
         end,
         dependencies = { { "nvim-tree/nvim-web-devicons" } },
     },
@@ -320,9 +316,7 @@ return {
         config = function(_, opts)
             local hooks = require("ibl.hooks")
 
-            -- Neovim 0.12 can leave LineNr cleared, so ibl cannot derive its
-            -- default IblScope highlight from it. Define it before every setup,
-            -- including setups triggered by a colorscheme change.
+            -- Neovim 0.12でLineNrが未定義でもIblScopeを生成できるよう、毎回先に定義します。
             hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
                 vim.api.nvim_set_hl(0, "IblScope", { fg = "#719cd6" })
             end)
@@ -355,12 +349,12 @@ return {
         event = "VeryLazy",
         config = function()
             local sm = require("smart-splits")
-            -- リサイズ (Alt+hjkl)
+            -- Alt+hjklでペインをリサイズします。
             vim.keymap.set("n", "<A-h>", sm.resize_left)
             vim.keymap.set("n", "<A-j>", sm.resize_down)
             vim.keymap.set("n", "<A-k>", sm.resize_up)
             vim.keymap.set("n", "<A-l>", sm.resize_right)
-            -- 移動 (Herdrペインとシームレスに連携)
+            -- Ctrl+hjklでHerdrのペインとシームレスに移動します。
             vim.keymap.set("n", "<C-h>", sm.move_cursor_left)
             vim.keymap.set("n", "<C-j>", sm.move_cursor_down)
             vim.keymap.set("n", "<C-k>", sm.move_cursor_up)

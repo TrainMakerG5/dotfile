@@ -1,16 +1,16 @@
-local augroup = vim.api.nvim_create_augroup -- Create/get autocommand group
-local autocmd = vim.api.nvim_create_autocmd -- Create autocommand
+local augroup = vim.api.nvim_create_augroup
+local autocmd = vim.api.nvim_create_autocmd
 local general = augroup("GeneralSettings", { clear = true })
 local platform = require("platform")
 
--- Don't auto commenting new lines
+-- 改行時にコメント記号を自動挿入しないようにします。
 autocmd("BufEnter", {
     group = general,
     pattern = "*",
     command = "set fo-=c fo-=r fo-=o",
 })
 
--- Restore cursor location when file is opened
+-- ファイルを開いたときに前回のカーソル位置を復元します。
 autocmd({ "BufReadPost" }, {
     group = general,
     pattern = { "*" },
@@ -18,8 +18,7 @@ autocmd({ "BufReadPost" }, {
         vim.api.nvim_exec('silent! normal! g`"zv', false)
     end,
 })
--- Octoのバッファは q でも閉じられるようにする (デフォルトではqに何も割り当てられておらず、
--- 押しても閉じずにバッファがbarbarのタブに残り続けてしまうため)
+-- Octoのバッファをqで閉じられるようにします。
 autocmd("FileType", {
     group = general,
     pattern = { "octo", "octo_panel" },
@@ -28,7 +27,7 @@ autocmd("FileType", {
     end,
 })
 
--- Briefly highlight copied text.
+-- コピーした範囲を短時間強調表示します。
 autocmd("TextYankPost", {
     group = general,
     callback = function()
@@ -36,13 +35,13 @@ autocmd("TextYankPost", {
     end,
 })
 
--- Reload files changed by formatters or Git outside Neovim.
+-- Neovim外でフォーマッタやGitが変更したファイルを再読み込みします。
 autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
     group = general,
     command = "checktime",
 })
 
--- Keep utility buffers visually quiet and easy to close.
+-- ユーティリティ用バッファの表示を簡素にし、qで閉じられるようにします。
 autocmd("FileType", {
     group = general,
     pattern = { "help", "qf", "checkhealth", "man" },
@@ -53,7 +52,7 @@ autocmd("FileType", {
     end,
 })
 
--- Avoid swap/undo overhead when opening very large files.
+-- 大きなファイルでswap、undo、構文解析などの負荷を抑えます。
 autocmd("BufReadPre", {
     group = general,
     callback = function(args)
@@ -68,9 +67,47 @@ autocmd("BufReadPre", {
     end,
 })
 
+autocmd("BufReadPost", {
+    group = general,
+    callback = function(args)
+        if not vim.b[args.buf].large_file then
+            return
+        end
+
+        vim.schedule(function()
+            if not vim.api.nvim_buf_is_valid(args.buf) then
+                return
+            end
+
+            vim.bo[args.buf].syntax = ""
+            pcall(vim.treesitter.stop, args.buf)
+            vim.diagnostic.enable(false, { bufnr = args.buf })
+
+            local has_gitsigns, gitsigns = pcall(require, "gitsigns")
+            if has_gitsigns then
+                pcall(gitsigns.detach, args.buf)
+            end
+
+            for _, client in ipairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                pcall(vim.lsp.buf_detach_client, args.buf, client.id)
+            end
+        end)
+    end,
+})
+
 autocmd("LspAttach", {
     group = general,
     callback = function(args)
+        if vim.b[args.buf].large_file then
+            local client_id = args.data and args.data.client_id
+            if client_id then
+                vim.schedule(function()
+                    pcall(vim.lsp.buf_detach_client, args.buf, client_id)
+                end)
+            end
+            return
+        end
+
         local function map(lhs, rhs, desc)
             vim.keymap.set("n", lhs, rhs, { buffer = args.buf, silent = true, desc = desc })
         end
@@ -95,6 +132,12 @@ end
 local function commit_and_push(opts)
     local cwd = vim.fn.expand(opts.cwd)
     local pathspec = opts.all and "." or vim.api.nvim_buf_get_name(0)
+
+    if not opts.all and vim.fs.basename(pathspec):lower() == "secretmemo.md" then
+        vim.notify("secretmemo.mdはGitへ追加できません。", vim.log.levels.ERROR)
+        return
+    end
+
     local status = git(cwd, { "status", "--porcelain", "--", pathspec })
 
     if status.code ~= 0 then

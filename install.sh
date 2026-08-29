@@ -74,21 +74,50 @@ check_fd() {
 
 setup_herdr_plugin() {
     plugin_source="$repo_dir/herdr/plugins/btop-sidebar"
-    plugin_list=""
+    plugin_json=""
+    registered_root=""
 
     if ! command -v herdr >/dev/null 2>&1; then
         warn "herdr がないため、btop-sidebarの登録を省略します。"
         return
     fi
 
-    if ! plugin_list=$(herdr plugin list 2>/dev/null); then
+    if ! plugin_json=$(herdr plugin list --plugin local.btop-sidebar --json 2>/dev/null); then
         fail "Herdrのプラグイン一覧を取得できませんでした。Herdrの起動状態とログを確認してください。"
         return
     fi
 
-    if printf '%s\n' "$plugin_list" | grep -Fq 'local.btop-sidebar'; then
-        info "Herdrプラグイン local.btop-sidebar は登録済みです。"
+    if command -v python3 >/dev/null 2>&1; then
+        registered_root=$(printf '%s\n' "$plugin_json" | python3 -c '
+import json
+import sys
+
+plugins = json.load(sys.stdin).get("result", {}).get("plugins", [])
+print(plugins[0].get("plugin_root", "") if plugins else "")
+')
+    elif printf '%s\n' "$plugin_json" | grep -Fq 'local.btop-sidebar'; then
+        warn "python3がないため、Herdrプラグインの登録先を照合できません。"
         return
+    fi
+
+    if [ -n "$registered_root" ]; then
+        resolved_plugin_source=$(readlink -f "$plugin_source" 2>/dev/null || true)
+        resolved_registered_root=$(readlink -f "$registered_root" 2>/dev/null || true)
+
+        if [ -n "$resolved_registered_root" ] && [ "$resolved_registered_root" = "$resolved_plugin_source" ]; then
+            info "Herdrプラグイン local.btop-sidebar は現在のリポジトリから登録済みです。"
+            return
+        fi
+
+        if [ "$check_only" = true ]; then
+            fail "Herdrプラグインは別の場所を参照しています: $registered_root"
+            return
+        fi
+
+        if ! herdr plugin unlink local.btop-sidebar >/dev/null; then
+            fail "古いHerdrプラグイン登録の解除に失敗しました。"
+            return
+        fi
     fi
 
     if [ "$check_only" = true ]; then
@@ -102,7 +131,7 @@ setup_herdr_plugin() {
     fi
 
     if herdr plugin link "$plugin_source" >/dev/null; then
-        info "Herdrプラグイン local.btop-sidebar を登録しました。"
+        info "Herdrプラグイン local.btop-sidebar を現在のリポジトリから登録しました。"
     else
         fail "Herdrプラグインの登録に失敗しました。"
     fi

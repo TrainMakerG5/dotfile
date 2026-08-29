@@ -51,7 +51,7 @@ return {
                 },
                 ui = {
                     float = {
-                        border = "rounded", -- 他のfloat(診断等)と統一
+                        border = "rounded", -- 診断などの他のフロート表示と揃えます。
                         winhl = "Normal",
                         borderhl = "FloatBorder",
                         winblend = 0,
@@ -79,7 +79,7 @@ return {
         },
         opts = {
             symbol_in_winbar = { enable = false },
-            ui = { border = "rounded", title = false }, -- 他のfloatと統一
+            ui = { border = "rounded", title = false }, -- 他のフロート表示と揃えます。
             lightbulb = { enable = false },
         },
         keys = {
@@ -97,8 +97,8 @@ return {
         "NeogitOrg/neogit",
         dependencies = {
             "nvim-lua/plenary.nvim",
-            "sindrets/diffview.nvim", -- 既に導入済み。差分表示が統合される
-            "nvim-telescope/telescope.nvim", -- 既に導入済み。ブランチ選択等がTelescopeで出る
+            "sindrets/diffview.nvim", -- 差分表示をDiffviewと統合します。
+            "nvim-telescope/telescope.nvim", -- ブランチ選択などをTelescopeで表示します。
         },
         cmd = "Neogit",
         keys = {
@@ -109,7 +109,7 @@ return {
         config = function()
             require("neogit").setup({
                 integrations = {
-                    diffview = true, -- 既存のdiffview.nvimと統合
+                    diffview = true, -- diffview.nvimと統合します。
                     telescope = true,
                 },
             })
