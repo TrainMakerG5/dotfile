@@ -36,6 +36,7 @@ map("n", "<leader>fb", "workbench.action.showAllEditors", "Open editors")
 map("n", "<leader>e", "workbench.view.explorer", "Explorer")
 map("n", "<leader>bd", "workbench.action.closeActiveEditor", "Close editor")
 map("n", "<leader>tt", "workbench.action.terminal.toggleTerminal", "Toggle terminal")
+map({ "n", "i", "x" }, "<C-a>", "editor.action.selectAll", "Select all")
 
 ---VSCode右側のVim操作ガイドを開閉します。
 local function toggle_vim_cheatsheet()

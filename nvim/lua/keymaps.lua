@@ -43,6 +43,10 @@ keymap("n", "<Esc>", "<cmd>nohlsearch<CR>", opts)
 keymap("v", "<", "<gv", opts)
 keymap("v", ">", ">gv", opts)
 
+-- VS Codeなどと同じ操作でバッファ全体を選択します。
+vim.keymap.set("n", "<C-a>", "ggVG", { silent = true, desc = "Select all" })
+vim.keymap.set({ "i", "x" }, "<C-a>", "<Esc>ggVG", { silent = true, desc = "Select all" })
+
 -- Oilを現在の場所で開きます。
 keymap("n", "<leader>e", ":Oil<Return>", opts)
 
