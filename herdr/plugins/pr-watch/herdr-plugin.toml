@@ -1,0 +1,20 @@
+id = "local.pr-watch"
+name = "PR Watch"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "Toggle a compact pane that watches GitHub pull requests."
+platforms = ["linux", "windows"]
+
+[[actions]]
+id = "toggle-unix"
+title = "Toggle pull request watch pane"
+contexts = ["workspace"]
+platforms = ["linux"]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/toggle-pr-watch.sh\""]
+
+[[actions]]
+id = "toggle-windows"
+title = "Toggle pull request watch pane"
+contexts = ["workspace"]
+platforms = ["windows"]
+command = ["pwsh", "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "& (Join-Path $env:HERDR_PLUGIN_ROOT 'bin\\toggle-pr-watch.ps1')"]

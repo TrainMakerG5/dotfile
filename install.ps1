@@ -122,20 +122,75 @@ function Set-HerdrConfigLink {
     }
 }
 
+function Set-HerdrPluginLink {
+    param(
+        [string]$Source,
+        [string]$PluginId
+    )
+
+    $herdr = Get-Command herdr -ErrorAction SilentlyContinue
+    if ($null -eq $herdr) {
+        Write-WarningMessage "herdr がないため、$PluginId の登録を省略します。"
+        return
+    }
+
+    try {
+        $pluginJson = & $herdr.Source plugin list --plugin $PluginId --json 2>$null
+        $plugin = ($pluginJson | ConvertFrom-Json).result.plugins | Select-Object -First 1
+    } catch {
+        Write-Failure "Herdrプラグイン $PluginId の状態を取得できませんでした。"
+        return
+    }
+
+    if ($null -ne $plugin) {
+        $registeredRoot = $plugin.plugin_root
+        $normalizedSource = $Source -replace '^\\\\\?\\', ''
+        $normalizedRoot = $registeredRoot -replace '^\\\\\?\\', ''
+        if (Test-SamePath -First $normalizedRoot -Second $normalizedSource) {
+            Write-Info "Herdrプラグイン $PluginId は登録済みです。"
+            return
+        }
+
+        if ($Check) {
+            Write-Failure "Herdrプラグイン $PluginId は別の場所を参照しています: $registeredRoot"
+            return
+        }
+
+        & $herdr.Source plugin unlink $PluginId | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Failure "Herdrプラグイン $PluginId の古い登録を解除できませんでした。"
+            return
+        }
+    } elseif ($Check) {
+        Write-Failure "Herdrプラグイン $PluginId は未登録です。"
+        return
+    }
+
+    & $herdr.Source plugin link $Source | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Info "Herdrプラグイン $PluginId を登録しました。"
+    } else {
+        Write-Failure "Herdrプラグイン $PluginId を登録できませんでした。"
+    }
+}
+
 function Test-CommandAvailable {
     param(
         [string]$Name,
         [string]$Requirement
     )
 
-    $currentPath = $env:Path
-    try {
-        $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-        $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-        $env:Path = [Environment]::ExpandEnvironmentVariables("$machinePath;$userPath")
-        $command = Get-Command $Name -ErrorAction SilentlyContinue
-    } finally {
-        $env:Path = $currentPath
+    $command = Get-Command $Name -ErrorAction SilentlyContinue
+    if ($null -eq $command) {
+        $currentPath = $env:Path
+        try {
+            $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+            $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+            $env:Path = [Environment]::ExpandEnvironmentVariables("$machinePath;$userPath")
+            $command = Get-Command $Name -ErrorAction SilentlyContinue
+        } finally {
+            $env:Path = $currentPath
+        }
     }
 
     if ($null -ne $command) {
@@ -150,6 +205,7 @@ $neovimSource = Join-Path $repoDirectory "nvim"
 $neovimTarget = Join-Path $env:LOCALAPPDATA "nvim"
 $herdrSource = Join-Path $repoDirectory "herdr\config.windows.toml"
 $herdrTarget = Join-Path $env:APPDATA "herdr\config.toml"
+$prWatchSource = Join-Path $repoDirectory "herdr\plugins\pr-watch"
 
 Write-Host "dotfile setup for Windows"
 Write-Host "Repository: $repoDirectory"
@@ -158,12 +214,17 @@ Write-Host "`n設定"
 Set-NeovimJunction -Source $neovimSource -Target $neovimTarget
 Set-HerdrConfigLink -Source $herdrSource -Target $herdrTarget
 
+Write-Host "`nHerdrプラグイン"
+Set-HerdrPluginLink -Source $prWatchSource -PluginId "local.pr-watch"
+
 Write-Host "`n依存コマンド"
 Test-CommandAvailable -Name "git" -Requirement "Neovimプラグインの取得に必須です"
 Test-CommandAvailable -Name "nvim" -Requirement "Neovim設定を利用する場合に必須です"
 Test-CommandAvailable -Name "pwsh" -Requirement "Windows用Herdr設定の既定シェルです"
 Test-CommandAvailable -Name "rg" -Requirement "Telescopeの全文検索に推奨です"
 Test-CommandAvailable -Name "fd" -Requirement "Telescopeのファイル検索に推奨です"
+Test-CommandAvailable -Name "gh" -Requirement "PR WatchとGitHub連携に必要です"
+Test-CommandAvailable -Name "python" -Requirement "PR WatchとPython開発機能に必要です"
 
 Write-Host ""
 if ($script:Errors -ne 0) {

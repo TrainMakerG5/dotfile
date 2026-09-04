@@ -73,16 +73,17 @@ check_fd() {
 }
 
 setup_herdr_plugin() {
-    plugin_source="$repo_dir/herdr/plugins/btop-sidebar"
+    plugin_id=$1
+    plugin_source=$2
     plugin_json=""
     registered_root=""
 
     if ! command -v herdr >/dev/null 2>&1; then
-        warn "herdr がないため、btop-sidebarの登録を省略します。"
+        warn "herdr がないため、$plugin_id の登録を省略します。"
         return
     fi
 
-    if ! plugin_json=$(herdr plugin list --plugin local.btop-sidebar --json 2>/dev/null); then
+    if ! plugin_json=$(herdr plugin list --plugin "$plugin_id" --json 2>/dev/null); then
         fail "Herdrのプラグイン一覧を取得できませんでした。Herdrの起動状態とログを確認してください。"
         return
     fi
@@ -95,7 +96,7 @@ import sys
 plugins = json.load(sys.stdin).get("result", {}).get("plugins", [])
 print(plugins[0].get("plugin_root", "") if plugins else "")
 ')
-    elif printf '%s\n' "$plugin_json" | grep -Fq 'local.btop-sidebar'; then
+    elif printf '%s\n' "$plugin_json" | grep -Fq "$plugin_id"; then
         warn "python3がないため、Herdrプラグインの登録先を照合できません。"
         return
     fi
@@ -105,7 +106,7 @@ print(plugins[0].get("plugin_root", "") if plugins else "")
         resolved_registered_root=$(readlink -f "$registered_root" 2>/dev/null || true)
 
         if [ -n "$resolved_registered_root" ] && [ "$resolved_registered_root" = "$resolved_plugin_source" ]; then
-            info "Herdrプラグイン local.btop-sidebar は現在のリポジトリから登録済みです。"
+            info "Herdrプラグイン $plugin_id は現在のリポジトリから登録済みです。"
             return
         fi
 
@@ -114,14 +115,14 @@ print(plugins[0].get("plugin_root", "") if plugins else "")
             return
         fi
 
-        if ! herdr plugin unlink local.btop-sidebar >/dev/null; then
+        if ! herdr plugin unlink "$plugin_id" >/dev/null; then
             fail "古いHerdrプラグイン登録の解除に失敗しました。"
             return
         fi
     fi
 
     if [ "$check_only" = true ]; then
-        fail "Herdrプラグイン local.btop-sidebar は未登録です。"
+        fail "Herdrプラグイン $plugin_id は未登録です。"
         return
     fi
 
@@ -131,7 +132,7 @@ print(plugins[0].get("plugin_root", "") if plugins else "")
     fi
 
     if herdr plugin link "$plugin_source" >/dev/null; then
-        info "Herdrプラグイン local.btop-sidebar を現在のリポジトリから登録しました。"
+        info "Herdrプラグイン $plugin_id を現在のリポジトリから登録しました。"
     else
         fail "Herdrプラグインの登録に失敗しました。"
     fi
@@ -162,7 +163,8 @@ link_config "$repo_dir/nvim" "$config_home/nvim" "Neovim設定"
 link_config "$repo_dir/herdr/config.toml" "$config_home/herdr/config.toml" "Herdr設定"
 
 printf '\n%s\n' "Herdrプラグイン"
-setup_herdr_plugin
+setup_herdr_plugin "local.btop-sidebar" "$repo_dir/herdr/plugins/btop-sidebar"
+setup_herdr_plugin "local.pr-watch" "$repo_dir/herdr/plugins/pr-watch"
 
 printf '\n%s\n' "依存コマンド"
 check_command git "Neovimプラグインの取得に必須です"
@@ -171,6 +173,7 @@ check_command rg "Telescopeの全文検索に推奨です"
 check_fd
 check_command btop "btop-sidebarを利用する場合に必要です"
 check_command python3 "btop-sidebarとPython開発機能に必要です"
+check_command gh "PR WatchとGitHub連携に必要です"
 
 printf '\n'
 if [ "$errors" -ne 0 ]; then

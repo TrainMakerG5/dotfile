@@ -9,3 +9,9 @@ key = "prefix+shift+b"
 type = "plugin_action"
 command = "local.btop-sidebar.toggle"
 description = "toggle btop pane"
+
+[[keys.command]]
+key = "prefix+shift+p"
+type = "plugin_action"
+command = "local.pr-watch.toggle-unix"
+description = "toggle pull request watch pane"

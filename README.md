@@ -35,9 +35,12 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │   ├── config.toml
 │   ├── config.windows.toml
 │   └── plugins/                     # ローカルHerdrプラグイン
-│       └── btop-sidebar/             # btopペインの開閉
+│       ├── btop-sidebar/             # btopペインの開閉
+│       │   ├── herdr-plugin.toml
+│       │   └── bin/btop-sidebar.sh
+│       └── pr-watch/                 # GitHub PR監視ペイン
 │           ├── herdr-plugin.toml
-│           └── bin/btop-sidebar.sh
+│           └── bin/
 ├── nvim/
 │   ├── init.lua
 │   ├── lazy-lock.json
@@ -60,6 +63,7 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 │       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
 ├── install.ps1                       # Windows用のセットアップと診断
 ├── install.sh                        # Linux／WSL用のセットアップと診断
+├── windows/                           # Windows専用の補助スクリプト
 ├── .gitattributes                    # OS間の改行コードを統一
 ├── stylua.toml
 └── README.md
@@ -93,7 +97,7 @@ Linux／WSL版インストーラーは次の処理を行います。
 
 - `~/.config/nvim`からリポジトリ内のNeovim設定へシンボリックリンクを作成
 - `~/.config/herdr/config.toml`からリポジトリ内のHerdr設定へシンボリックリンクを作成
-- Herdrが利用できる場合、`btop-sidebar`を`herdr plugin link`で個別登録
+- Herdrが利用できる場合、`btop-sidebar`と`pr-watch`を`herdr plugin link`で個別登録
 - 外部コマンドの導入状況を表示
 
 既存ファイルや既存ディレクトリがある場合は何も上書きせず、対応が必要なパスを表示して終了します。設定を変更せず現在の状態だけを確認する場合は、次を実行してください。
@@ -144,6 +148,7 @@ ln -s ~/dotfile/herdr/config.toml ~/.config/herdr/config.toml
 
 # btopペインを使う場合だけ実行します。
 herdr plugin link ~/dotfile/herdr/plugins/btop-sidebar
+herdr plugin link ~/dotfile/herdr/plugins/pr-watch
 ```
 
 `~/.config/herdr/plugins`ディレクトリ全体をリポジトリへリンクしても、Herdrにはプラグインとして登録されません。ローカルプラグインは必ず`herdr plugin link`で個別に登録してください。
@@ -168,6 +173,12 @@ WindowsではPowerShellから次を実行します。
 Set-Location "$env:USERPROFILE\dotfile"
 git pull --ff-only
 .\install.ps1 -Check
+```
+
+Windowsのデスクトップへ「Herdrを終了してシャットダウン」ショートカットを登録する場合は、次を実行します。ショートカットは実行中のすべてのHerdrセッションを正常停止したあと、Windowsをシャットダウンします。
+
+```powershell
+.\windows\Install-HerdrShutdownShortcut.ps1
 ```
 
 Neovimプラグインは`lazy-lock.json`のバージョンに従います。Neovim内で`:Lazy sync`を実行すると、未導入プラグインの取得とロック済みバージョンへの同期が行われます。Masonが管理するLSPやフォーマッタ、Herdrのセッション、認証情報はGitでは同期されないため、各環境で個別に用意してください。
@@ -199,7 +210,7 @@ herdr plugin action list
 | `curl`、`unzip` | Masonなどのダウンロード・展開 | 開発機能利用時 |
 | `python` / `python3` | Python実行、Molten | Python利用時 |
 | `node`、`npm` | JavaScript／TypeScript開発 | Web開発時 |
-| `gh` | OctoによるGitHub操作 | GitHub連携時 |
+| `gh` | OctoとHerdrのPR WatchによるGitHub操作 | GitHub連携時 |
 | `cmake`または`make` | telescope-fzf-nativeのビルド | 任意 |
 | `magick` | 対応ターミナルでの画像表示 | 任意 |
 
@@ -210,6 +221,13 @@ winget install --id Git.Git --exact --source winget
 winget install --id Neovim.Neovim --exact --source winget
 winget install --id BurntSushi.ripgrep.MSVC --exact --source winget
 winget install --id sharkdp.fd --exact --source winget
+winget install --id GitHub.cli --exact --source winget
+```
+
+PR Watchを利用するPCでは、GitHub CLIの導入後に一度ログインします。
+
+```powershell
+gh auth login
 ```
 
 Ubuntu系のWSLでは次が基本構成です。Neovimはディストリビューション付属版が古い場合があるため、[Neovim公式のインストール手順](https://neovim.io/doc/install/)も確認してください。
@@ -365,6 +383,18 @@ Windowsネイティブではimage.nvimを無効化し、テキスト出力を利
 Unix向けの`config.toml`は環境に依存しにくい共通項目だけを持ち、Windows向けの`config.windows.toml`はPowerShell 7を既定シェルに指定します。Herdrを利用しない場合、`herdr`ディレクトリは無視できます。
 
 Linuxで`btop`と`python3`が利用できる場合、`btop-sidebar`プラグインで現在のワークスペース下部にbtopを表示できます。`Ctrl+B`を押して離し、`Shift+B`を押すと開閉できます。開いても元のペインからフォーカスは移動しません。Windowsではこのプラグインは動作しません。
+
+WindowsとWSL／Linuxでは、`PR Watch`プラグインで右側にGitHub PR一覧を表示できます。`Ctrl+B`を押して離し、`Shift+P`を押すと開閉できます。自分にレビュー依頼があるオープンPRをリポジトリ横断で表示し、現在のペインがいるリポジトリのオープンPRも表示します。表示は60秒ごとに更新されます。
+
+PR WatchにはPythonと、認証済みの[GitHub CLI](https://cli.github.com/)が必要です。セットアップ後にプラグインが未登録の場合は、各OSのリポジトリ直下で通常のインストーラーを再実行してください。
+
+```powershell
+.\install.ps1
+```
+
+```bash
+./install.sh
+```
 
 設定変更後はHerdr内のメニュー、または次のコマンドで再読み込みできます。
 

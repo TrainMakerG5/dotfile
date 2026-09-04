@@ -6,3 +6,9 @@ default_shell = "pwsh"
 [theme]
 name = "tokyo-night"
 auto_switch = false
+
+[[keys.command]]
+key = "prefix+shift+p"
+type = "plugin_action"
+command = "local.pr-watch.toggle-windows"
+description = "toggle pull request watch pane"
