@@ -275,6 +275,7 @@ Neovimの実行パスやWSL利用の有無は、VS Code Neovimの設定画面で
 | `Space e` | Explorer |
 | `Space bd` | エディタを閉じる |
 | `Space tt` | ターミナル切り替え |
+| `y` / `p` | VS Codeのクリップボードへコピー／貼り付け |
 | `gd` / `gr` / `gi` | 定義・参照・実装へ移動 |
 | `K` | Hover表示 |
 | `Space lr` | Rename |

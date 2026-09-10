@@ -4,6 +4,7 @@ local cheatsheet = require("vim_cheatsheet_data")
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.timeoutlen = 300
+vim.opt.clipboard = "unnamedplus"
 
 -- WSLを含め、VSCodeのクリップボードを利用します。
 if vim.g.vscode_clipboard then
