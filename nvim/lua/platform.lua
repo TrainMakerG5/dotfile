@@ -21,9 +21,18 @@ function M.executable(candidates)
     return nil
 end
 
+local home = vim.uv.os_homedir() or vim.fn.expand("~")
+
 M.python = M.executable(M.is_windows and { "python", "python3" } or { "python3", "python" })
 
-local home = vim.uv.os_homedir() or vim.fn.expand("~")
+local im_switch_dir
+if M.is_windows and vim.env.LOCALAPPDATA then
+    im_switch_dir = M.join(vim.env.LOCALAPPDATA, "im-switch.nvim")
+elseif M.is_wsl then
+    im_switch_dir = M.join(home, ".local", "share", "im-switch.nvim")
+end
+M.im_switch = im_switch_dir and M.executable({ M.join(im_switch_dir, "im-switch.exe") }) or nil
+
 M.memo_dir = vim.fn.expand(vim.env.NVIM_MEMO_DIR or M.join(home, "Desktop", "memo"))
 M.daily_log_dir = vim.fn.expand(vim.env.NVIM_DAILY_LOG_DIR or M.join(home, "Desktop", "daily_log"))
 

@@ -16,6 +16,7 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 - Neogit、Gitsigns、Diffview、OctoによるGit／GitHub操作
 - MoltenとNotebookNavigatorによるJupyterセル実行
 - VS Code Neovim向けの軽量な専用設定
+- 日本語キーボード配列を維持したNormalモード時のIMEオフ切り替え
 - NeovimとVS Codeの両方で使えるVim操作チートシート
 - StyLuaによるスペース4個のLuaフォーマット
 
@@ -26,6 +27,8 @@ OS固有の絶対パスをできるだけ避け、ホームディレクトリ、
 - Windows 11またはWSL2
 
 通常のLinuxでも動作するよう実装していますが、主な動作確認対象はWindows 11とWSL2です。macOS向けの環境判定もありますが、動作保証はしていません。
+
+Windows／WSLでは、InsertモードまたはコマンドラインからNormalモードへ戻るとIMEだけをオフにします。キーボード配列は日本語配列のまま維持され、通常NeovimとVS Code Neovimの両方で動作します。切り替え用CLIは`im-switch.nvim`の導入時に自動取得されるため、`im-select.exe`は不要です。
 
 ## リポジトリ構成
 

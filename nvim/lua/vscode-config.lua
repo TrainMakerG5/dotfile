@@ -1,5 +1,6 @@
 local vscode = require("vscode")
 local cheatsheet = require("vim_cheatsheet_data")
+local platform = require("platform")
 
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -9,6 +10,25 @@ vim.opt.clipboard = "unnamedplus"
 -- WSLを含め、VSCodeのクリップボードを利用します。
 if vim.g.vscode_clipboard then
     vim.g.clipboard = vim.g.vscode_clipboard
+end
+
+-- VS Code Neovimでも日本語配列を維持したままIMEだけをオフにします。
+if platform.im_switch then
+    local ime_group = vim.api.nvim_create_augroup("VsCodeImeAutoSwitch", { clear = true })
+
+    vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
+        group = ime_group,
+        callback = function()
+            local result = vim.system({ platform.im_switch, "ime", "off" }, { text = true }):wait()
+            if result.code ~= 0 then
+                vim.notify_once(
+                    "IMEの切り替えに失敗しました。im-switchの状態を確認してください。",
+                    vim.log.levels.WARN
+                )
+            end
+        end,
+        desc = "NormalモードでIMEをオフにします",
+    })
 end
 
 ---@param command string

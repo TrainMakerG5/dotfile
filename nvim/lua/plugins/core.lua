@@ -77,6 +77,17 @@ return {
     },
 
     -- =========================
+    -- IMEの自動切り替え
+    -- =========================
+    {
+        "drop-stones/im-switch.nvim",
+        event = { "InsertEnter", "CmdlineEnter" },
+        opts = {
+            mode = "fixed",
+        },
+    },
+
+    -- =========================
     -- Completion (nvim-cmp)
     -- =========================
     {
