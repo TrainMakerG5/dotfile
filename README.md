@@ -81,10 +81,10 @@ Windows／WSLでは、InsertモードまたはコマンドラインからNormal�
 ```powershell
 git clone https://github.com/TrainMakerG5/dotfile.git "$env:USERPROFILE\dotfile"
 Set-Location "$env:USERPROFILE\dotfile"
-.\install.ps1
+.\install.ps1 -SyncPlugins
 ```
 
-設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行してください。Windows版はNeovim設定のジャンクションと、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録します。
+`-SyncPlugins`を指定すると、設定の登録後に`lazy-lock.json`に従ってNeovimプラグインを同期し、IME切り替えCLIも導入します。プラグインをまだダウンロードしない場合は、オプションを外して`.\install.ps1`を実行してください。設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行します。Windows版はNeovim設定のジャンクションと、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録します。
 
 Herdr設定のシンボリックリンク作成に失敗する場合は、Windowsの開発者モードを有効にするか、管理者PowerShellでインストーラーを再実行してください。
 
@@ -93,7 +93,7 @@ Herdr設定のシンボリックリンク作成に失敗する場合は、Window
 ```bash
 git clone https://github.com/TrainMakerG5/dotfile.git ~/dotfile
 cd ~/dotfile
-./install.sh
+./install.sh --sync-plugins
 ```
 
 Linux／WSL版インストーラーは次の処理を行います。
@@ -102,6 +102,7 @@ Linux／WSL版インストーラーは次の処理を行います。
 - `~/.config/herdr/config.toml`からリポジトリ内のHerdr設定へシンボリックリンクを作成
 - Herdrが利用できる場合、`btop-sidebar`と`pr-watch`を`herdr plugin link`で個別登録
 - 外部コマンドの導入状況を表示
+- `--sync-plugins`指定時はNeovimプラグインとIME切り替えCLIを同期
 
 既存ファイルや既存ディレクトリがある場合は何も上書きせず、対応が必要なパスを表示して終了します。設定を変更せず現在の状態だけを確認する場合は、次を実行してください。
 
@@ -158,7 +159,7 @@ herdr plugin link ~/dotfile/herdr/plugins/pr-watch
 
 Windows側とWSL側では、それぞれリポジトリをcloneし、Git経由で同期する運用を想定しています。WSLからWindows側のリポジトリを直接参照すると、ファイルシステム性能や実行ファイルの違いで問題が起きることがあります。
 
-初回起動時にlazy.nvimと各プラグインがダウンロードされます。
+セットアップ時にプラグイン同期オプションを使わなかった場合は、Neovimの初回起動時にlazy.nvimと各プラグインがダウンロードされます。
 
 ## 更新
 

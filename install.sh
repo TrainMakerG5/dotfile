@@ -6,11 +6,13 @@ set -eu
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
 check_only=false
+sync_plugins=false
 errors=0
 
 usage() {
-    printf '%s\n' "Usage: ./install.sh [--check]"
+    printf '%s\n' "Usage: ./install.sh [--check | --sync-plugins]"
     printf '%s\n' "  --check  設定を変更せず、導入状態と依存コマンドを確認します。"
+    printf '%s\n' "  --sync-plugins  設定後にNeovimプラグインを同期します。"
 }
 
 info() {
@@ -69,6 +71,47 @@ check_fd() {
         info "fdfind: $(command -v fdfind)"
     else
         warn "fd／fdfind がありません（Telescopeのファイル検索に推奨です）。"
+    fi
+}
+
+sync_neovim_plugins() {
+    if [ "$check_only" = true ]; then
+        return
+    fi
+
+    if [ "$sync_plugins" = false ]; then
+        warn "Neovimプラグインは同期していません。必要な場合は--sync-pluginsを付けて再実行してください。"
+        return
+    fi
+
+    nvim_config="$config_home/nvim"
+    if [ ! -L "$nvim_config" ] || [ "$(readlink -f "$nvim_config" 2>/dev/null || true)" != "$repo_dir/nvim" ]; then
+        warn "Neovim設定が現在のリポジトリを参照していないため、プラグイン同期を省略します。"
+        return
+    fi
+
+    if ! command -v nvim >/dev/null 2>&1; then
+        fail "Neovimプラグインを同期できません。nvimをPATHへ追加してください。"
+        return
+    fi
+
+    if nvim --headless -i NONE '+Lazy! sync' +qa; then
+        info "Neovimプラグインをlazy-lock.jsonに従って同期しました。"
+    else
+        fail "Neovimプラグインの同期に失敗しました。"
+    fi
+}
+
+check_ime_switch_cli() {
+    if [ -z "${WSL_DISTRO_NAME:-}" ]; then
+        return
+    fi
+
+    ime_switch="$HOME/.local/share/im-switch.nvim/im-switch.exe"
+    if [ -f "$ime_switch" ]; then
+        info "IME切り替えCLI: $ime_switch"
+    else
+        warn "IME切り替えCLIがありません（--sync-pluginsで導入できます）。"
     fi
 }
 
@@ -138,21 +181,30 @@ print(plugins[0].get("plugin_root", "") if plugins else "")
     fi
 }
 
-case ${1:-} in
-    "")
-        ;;
-    --check)
-        check_only=true
-        ;;
-    -h|--help)
-        usage
-        exit 0
-        ;;
-    *)
-        usage >&2
-        exit 2
-        ;;
-esac
+while [ "$#" -gt 0 ]; do
+    case $1 in
+        --check)
+            check_only=true
+            ;;
+        --sync-plugins)
+            sync_plugins=true
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
+    esac
+    shift
+done
+
+if [ "$check_only" = true ] && [ "$sync_plugins" = true ]; then
+    printf '%s\n' "--checkと--sync-pluginsは同時に指定できません。" >&2
+    exit 2
+fi
 
 printf '%s\n' "dotfile setup"
 printf '%s\n' "Repository: $repo_dir"
@@ -174,6 +226,10 @@ check_fd
 check_command btop "btop-sidebarを利用する場合に必要です"
 check_command python3 "btop-sidebarとPython開発機能に必要です"
 check_command gh "PR WatchとGitHub連携に必要です"
+
+printf '\n%s\n' "Neovimプラグイン"
+sync_neovim_plugins
+check_ime_switch_cli
 
 printf '\n'
 if [ "$errors" -ne 0 ]; then

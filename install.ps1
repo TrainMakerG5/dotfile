@@ -1,12 +1,18 @@
 [CmdletBinding()]
 param(
-    [switch]$Check
+    [switch]$Check,
+    [switch]$SyncPlugins
 )
 
 # Windows向けに、このリポジトリの設定を安全に登録します。
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $script:Errors = 0
+
+if ($Check -and $SyncPlugins) {
+    Write-Error "-Checkと-SyncPluginsは同時に指定できません。" -ErrorAction Continue
+    exit 2
+}
 
 function Write-Info {
     param([string]$Message)
@@ -200,6 +206,51 @@ function Test-CommandAvailable {
     }
 }
 
+function Sync-NeovimPlugins {
+    if ($Check) {
+        return
+    }
+
+    if (-not $SyncPlugins) {
+        Write-WarningMessage "Neovimプラグインは同期していません。必要な場合は-SyncPluginsを付けて再実行してください。"
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $neovimTarget)) {
+        Write-WarningMessage "Neovim設定が登録されていないため、プラグイン同期を省略します。"
+        return
+    }
+
+    $configItem = Get-Item -LiteralPath $neovimTarget -Force
+    $configTarget = @($configItem.Target)[0]
+    if ($null -eq $configTarget -or -not (Test-SamePath -First $configTarget -Second $neovimSource)) {
+        Write-WarningMessage "Neovim設定が現在のリポジトリを参照していないため、プラグイン同期を省略します。"
+        return
+    }
+
+    $nvim = Get-Command nvim -ErrorAction SilentlyContinue
+    if ($null -eq $nvim) {
+        Write-Failure "Neovimプラグインを同期できません。nvimをPATHへ追加してください。"
+        return
+    }
+
+    & $nvim.Source --headless -i NONE "+Lazy! sync" +qa
+    if ($LASTEXITCODE -eq 0) {
+        Write-Info "Neovimプラグインをlazy-lock.jsonに従って同期しました。"
+    } else {
+        Write-Failure "Neovimプラグインの同期に失敗しました。"
+    }
+}
+
+function Test-ImeSwitchCli {
+    $imeSwitch = Join-Path $env:LOCALAPPDATA "im-switch.nvim\im-switch.exe"
+    if (Test-Path -LiteralPath $imeSwitch -PathType Leaf) {
+        Write-Info "IME切り替えCLI: $imeSwitch"
+    } else {
+        Write-WarningMessage "IME切り替えCLIがありません（-SyncPluginsで導入できます）。"
+    }
+}
+
 $repoDirectory = $PSScriptRoot
 $neovimSource = Join-Path $repoDirectory "nvim"
 $neovimTarget = Join-Path $env:LOCALAPPDATA "nvim"
@@ -225,6 +276,10 @@ Test-CommandAvailable -Name "rg" -Requirement "Telescopeの全文検索に推奨
 Test-CommandAvailable -Name "fd" -Requirement "Telescopeのファイル検索に推奨です"
 Test-CommandAvailable -Name "gh" -Requirement "PR WatchとGitHub連携に必要です"
 Test-CommandAvailable -Name "python" -Requirement "PR WatchとPython開発機能に必要です"
+
+Write-Host "`nNeovimプラグイン"
+Sync-NeovimPlugins
+Test-ImeSwitchCli
 
 Write-Host ""
 if ($script:Errors -ne 0) {
