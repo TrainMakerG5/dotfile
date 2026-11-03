@@ -1,0 +1,161 @@
+add_newline = true
+
+# プロンプト前半にOS、ユーザー、ディレクトリ、Git、開発言語を表示します。
+# 同じ行の右側に実行時間、メモリ、現在時刻を表示します。
+# 次の行に失敗時の終了コードと入力プロンプトを表示します。
+format = """
+$os\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_metrics\
+$package\
+$nodejs\
+$python\
+$rust\
+$golang\
+$docker_context\
+$fill\
+$cmd_duration\
+$memory_usage\
+$time\
+$line_break\
+$status\
+$character"""
+
+[fill]
+symbol = " "
+
+# OS名を表示します。
+[os]
+disabled = false
+style = "bold #7aa2f7"
+format = "[$symbol]($style) "
+
+[os.symbols]
+Windows = "\\[WIN\\]"
+Ubuntu = "\\[UBUNTU\\]"
+Macos = "\\[MAC\\]"
+Arch = "\\[ARCH\\]"
+Debian = "\\[DEBIAN\\]"
+Linux = "\\[LINUX\\]"
+
+# ユーザー名を表示し、rootの場合は赤く強調します。
+[username]
+show_always = false
+style_user = "#565f89"
+style_root = "bold #f7768e"
+format = "[$user]($style)@"
+
+# SSH接続時にホスト名を表示します。
+[hostname]
+ssh_only = true
+style = "#565f89"
+format = "[$hostname]($style) "
+
+# カレントディレクトリを表示します。
+[directory]
+style = "bold #7aa2f7"
+# Gitルートで短縮を止めず、通常のパスカウントを優先します。
+truncate_to_repo = false
+# 末尾から2階層をそのまま残します。
+truncation_length = 2
+# 溢れた親階層を1文字に短縮します。
+fish_style_pwd_dir_length = 1
+# 省略記号を表示しません。
+truncation_symbol = ""
+read_only = " [RO]"
+format = "[$path]($style)[$read_only]($read_only_style) "
+
+
+[git_branch]
+style = "bold #bb9af7"
+symbol = "git:"
+format = "[$symbol$branch]($style) "
+
+# Gitの追加・削除行数を表示します。
+[git_metrics]
+disabled = false
+added_style = "bold #73daca"
+deleted_style = "bold #f7768e"
+format = "([+$added]($added_style) [-$deleted]($deleted_style) )"
+
+# Gitステータスを表示します。
+[git_status]
+style = "bold #f7768e"
+format = "([\\[$all_status$ahead_behind\\]]($style) )"
+conflicted = "="
+ahead = "^${count}"
+behind = "v${count}"
+diverged = "^${ahead_count}v${behind_count}"
+untracked = "?"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "x"
+
+# 言語環境を表示します。
+[nodejs]
+symbol = "node:"
+style = "#73daca"
+format = "[$symbol($version )]($style)"
+
+[python]
+symbol = "py:"
+style = "#e0af68"
+format = "[$symbol(${virtualenv}@)($version )]($style)"
+
+[conda]
+symbol = "conda:"
+style = "bold #73daca"
+format = "[$symbol$environment]($style) "
+ignore_base = false
+
+[rust]
+symbol = "rs:"
+style = "#ff9e64"
+format = "[$symbol($version )]($style)"
+
+[golang]
+symbol = "go:"
+style = "#7dcfff"
+format = "[$symbol($version )]($style)"
+
+[docker_context]
+symbol = "docker:"
+style = "#2ac3de"
+format = "[$symbol$context]($style) "
+
+# 実行時間が2秒以上の場合に表示します。
+[cmd_duration]
+min_time = 2000
+style = "italic #565f89"
+format = "[$duration]($style) "
+
+# メモリ使用率が75%を超えた場合に表示します。
+[memory_usage]
+disabled = false
+threshold = 75
+symbol = "mem:"
+style = "bold #ff9e64"
+format = "[$symbol$ram]($style) "
+
+# 現在時刻を24時間表記で表示します。
+[time]
+disabled = false
+time_format = "%T"
+style = "#565f89"
+format = "[$time]($style)"
+
+# 直前のコマンドが失敗した場合に終了コードを赤く表示します。
+[status]
+disabled = false
+style = "bold #f7768e"
+format = "[$status]($style) "
+
+# 入力プロンプトを表示します。
+[character]
+success_symbol = "[❯](bold #73daca)"
+error_symbol = "[❯](bold #f7768e)"

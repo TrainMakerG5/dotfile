@@ -79,6 +79,40 @@ function Set-NeovimJunction {
     Write-Info "Neovim設定をジャンクションとして登録しました。"
 }
 
+function Set-StarshipConfigLink {
+    param(
+        [string]$Source,
+        [string]$Target
+    )
+
+    $item = Get-Item -LiteralPath $Target -Force -ErrorAction SilentlyContinue
+    if ($null -ne $item) {
+        $linkTarget = @($item.Target)[0]
+        if ($null -ne $linkTarget -and (Test-SamePath -First $linkTarget -Second $Source)) {
+            Write-Info "Starship設定はシンボリックリンクとして登録済みです。"
+            return
+        }
+
+        Write-Failure "$Target が既にあります。バックアップまたは削除してから再実行してください。"
+        return
+    }
+
+    if ($Check) {
+        Write-Failure "Starship設定のシンボリックリンクは未登録です。"
+        return
+    }
+
+    $parent = Split-Path -Parent $Target
+    New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    try {
+        New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
+    } catch {
+        Write-Failure "Starship設定のシンボリックリンクを作成できませんでした。Windowsの開発者モードを有効にするか、管理者PowerShellで再実行してください。"
+        return
+    }
+    Write-Info "Starship設定をシンボリックリンクとして登録しました。"
+}
+
 function Set-HerdrConfigLink {
     param(
         [string]$Source,
@@ -256,12 +290,19 @@ $neovimSource = Join-Path $repoDirectory "nvim"
 $neovimTarget = Join-Path $env:LOCALAPPDATA "nvim"
 $herdrSource = Join-Path $repoDirectory "herdr\config.windows.toml"
 $herdrTarget = Join-Path $env:APPDATA "herdr\config.toml"
+$starshipSource = Join-Path $repoDirectory "starship.toml"
+$starshipTarget = if ([string]::IsNullOrWhiteSpace($env:STARSHIP_CONFIG)) {
+    Join-Path $HOME ".config\starship.toml"
+} else {
+    $env:STARSHIP_CONFIG
+}
 $prWatchSource = Join-Path $repoDirectory "herdr\plugins\pr-watch"
 
 Write-Host "dotfile setup for Windows"
 Write-Host "Repository: $repoDirectory"
 
 Write-Host "`n設定"
+Set-StarshipConfigLink -Source $starshipSource -Target $starshipTarget
 Set-NeovimJunction -Source $neovimSource -Target $neovimTarget
 Set-HerdrConfigLink -Source $herdrSource -Target $herdrTarget
 
@@ -269,6 +310,7 @@ Write-Host "`nHerdrプラグイン"
 Set-HerdrPluginLink -Source $prWatchSource -PluginId "local.pr-watch"
 
 Write-Host "`n依存コマンド"
+Test-CommandAvailable -Name "starship" -Requirement "Starshipプロンプトを利用する場合に必要です"
 Test-CommandAvailable -Name "git" -Requirement "Neovimプラグインの取得に必須です"
 Test-CommandAvailable -Name "nvim" -Requirement "Neovim設定を利用する場合に必須です"
 Test-CommandAvailable -Name "pwsh" -Requirement "Windows用Herdr設定の既定シェルです"

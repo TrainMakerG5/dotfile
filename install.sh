@@ -5,6 +5,7 @@ set -eu
 
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+starship_config=${STARSHIP_CONFIG:-"$HOME/.config/starship.toml"}
 check_only=false
 sync_plugins=false
 errors=0
@@ -211,6 +212,7 @@ printf '%s\n' "Repository: $repo_dir"
 printf '%s\n' "Config home: $config_home"
 
 printf '\n%s\n' "設定リンク"
+link_config "$repo_dir/starship.toml" "$starship_config" "Starship設定"
 link_config "$repo_dir/nvim" "$config_home/nvim" "Neovim設定"
 link_config "$repo_dir/herdr/config.toml" "$config_home/herdr/config.toml" "Herdr設定"
 
@@ -219,6 +221,7 @@ setup_herdr_plugin "local.btop-sidebar" "$repo_dir/herdr/plugins/btop-sidebar"
 setup_herdr_plugin "local.pr-watch" "$repo_dir/herdr/plugins/pr-watch"
 
 printf '\n%s\n' "依存コマンド"
+check_command starship "Starshipプロンプトを利用する場合に必要です"
 check_command git "Neovimプラグインの取得に必須です"
 check_command nvim "Neovim設定を利用する場合に必須です"
 check_command rg "Telescopeの全文検索に推奨です"

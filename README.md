@@ -1,6 +1,6 @@
 # dotfile
 
-Windows 11・WSL2・VS Code Neovimで共有している、個人用のNeovim／Herdr設定です。
+Windows 11・WSL2・VS Code Neovimで共有している、個人用のNeovim／Herdr／Starship設定です。
 
 OS固有の絶対パスをできるだけ避け、ホームディレクトリ、Python、ビルドツール、画像表示への対応状況を起動時に判定します。通常のNeovimでは開発環境一式を読み込み、VS Code NeovimではVS Codeに必要な軽量設定だけを読み込みます。
 
@@ -64,6 +64,7 @@ Windows／WSLでは、InsertモードまたはコマンドラインからNormal�
 │       ├── vscode-config.lua        # VS Code Neovim専用設定
 │       ├── vim_cheatsheet.lua       # 通常Neovim用チートシート
 │       └── vim_cheatsheet_data.lua  # 両環境で共有する表示内容
+├── starship.toml                     # OS間で共有するプロンプト設定
 ├── install.ps1                       # Windows用のセットアップと診断
 ├── install.sh                        # Linux／WSL用のセットアップと診断
 ├── windows/                           # Windows専用の補助スクリプト
@@ -74,7 +75,7 @@ Windows／WSLでは、InsertモードまたはコマンドラインからNormal�
 
 ## クイックスタート
 
-この設定は既存のNeovim／Herdr設定を自動では上書きしません。先に既存設定をバックアップしてから利用してください。
+この設定は既存のNeovim／Herdr／Starship設定を自動では上書きしません。先に既存設定をバックアップしてから利用してください。
 
 ### Windows PowerShell
 
@@ -86,7 +87,7 @@ Set-Location "$env:USERPROFILE\dotfile"
 
 `-SyncPlugins`を指定すると、設定の登録後に`lazy-lock.json`に従ってNeovimプラグインを同期し、IME切り替えCLIも導入します。プラグインをまだダウンロードしない場合は、オプションを外して`.\install.ps1`を実行してください。設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行します。Windows版はNeovim設定のジャンクションと、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録します。
 
-Herdr設定のシンボリックリンク作成に失敗する場合は、Windowsの開発者モードを有効にするか、管理者PowerShellでインストーラーを再実行してください。
+Herdr／Starship設定のシンボリックリンク作成に失敗する場合は、Windowsの開発者モードを有効にするか、管理者PowerShellでインストーラーを再実行してください。
 
 ### WSL2／Linux
 
@@ -98,6 +99,7 @@ cd ~/dotfile
 
 Linux／WSL版インストーラーは次の処理を行います。
 
+- `~/.config/starship.toml`からリポジトリ直下のStarship設定へシンボリックリンクを作成
 - `~/.config/nvim`からリポジトリ内のNeovim設定へシンボリックリンクを作成
 - `~/.config/herdr/config.toml`からリポジトリ内のHerdr設定へシンボリックリンクを作成
 - Herdrが利用できる場合、`btop-sidebar`と`pr-watch`を`herdr plugin link`で個別登録
@@ -111,6 +113,26 @@ Linux／WSL版インストーラーは次の処理を行います。
 ```
 
 どちらのインストーラーも、既存の設定や別の設定先を自動では上書きしません。
+
+### Starshipの同期
+
+`starship.toml`をWindowsとWSL／Linuxで共有します。両OSのインストーラーが、ホームディレクトリの`.config/starship.toml`へシンボリックリンクを作成します。`STARSHIP_CONFIG`が設定されている場合は、そのパスをリンク先に使います。Starshipの既定パスは`XDG_CONFIG_HOME`には追従しません。
+
+既存の`starship.toml`がある環境では、先に別名でバックアップしてからインストーラーを実行してください。一度リンクすれば、設定の編集内容をGitでcommit・pushし、別環境で`git pull --ff-only`すると同期できます。更新後のプロンプトから反映されます。
+
+Starship本体のインストールとシェルの初期化は各環境で必要です。Bashでは`~/.bashrc`へ次を追加します。
+
+```bash
+eval "$(starship init bash)"
+```
+
+PowerShellでは`$PROFILE`へ次を追加します。
+
+```powershell
+Invoke-Expression (&starship init powershell)
+```
+
+初期化済みのシェルには重複して追加する必要はありません。詳細は[Starship公式ガイド](https://starship.rs/guide/)と[設定ドキュメント](https://starship.rs/config/)を参照してください。
 
 ### 手動インストール
 
@@ -208,6 +230,7 @@ herdr plugin action list
 
 | ツール | 用途 | 必須度 |
 | --- | --- | --- |
+| `starship` | OS間で共有するプロンプト | プロンプト利用時 |
 | `git` | プラグイン取得とGit操作 | 必須 |
 | `rg` | Telescopeの全文検索 | 推奨 |
 | `fd` / `fdfind` | ファイル・Python仮想環境検索 | 推奨 |
