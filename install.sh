@@ -227,7 +227,7 @@ check_command nvim "Neovim設定を利用する場合に必須です"
 check_command rg "Telescopeの全文検索に推奨です"
 check_fd
 check_command btop "btop-sidebarを利用する場合に必要です"
-check_command python3 "btop-sidebarとPython開発機能に必要です"
+check_command python3 "btop-sidebar・PR Watch・Python開発機能に必要です"
 check_command gh "PR WatchとGitHub連携に必要です"
 
 printf '\n%s\n' "Neovimプラグイン"

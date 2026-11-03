@@ -402,8 +402,8 @@ return {
                     require("diagram.integrations.markdown"),
                 },
                 events = {
-                    render_buffer = { "InsertLeave", "BufWinEnter" }, -- インサートを抜けたら画像表示
-                    clear_buffer = { "InsertEnter", "BufLeave" }, -- インサートに入ったら画像を消す
+                    render_buffer = { "InsertLeave", "BufWinEnter" }, -- Insertモードを抜けたら画像を表示します。
+                    clear_buffer = { "InsertEnter", "BufLeave" }, -- Insertモードに入ったら画像を消します。
                 },
                 renderer_options = {
                     mermaid = {

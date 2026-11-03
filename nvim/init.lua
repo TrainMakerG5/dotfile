@@ -9,7 +9,7 @@ vim.g.maplocalleader = " "
 -- =========================
 vim.opt.termguicolors = true
 
--- VSCode NeovimではVSCodeと競合しない専用設定だけを読み込みます。
+-- VS Code NeovimではVS Codeと競合しない専用設定だけを読み込みます。
 if vim.g.vscode then
     require("vscode-config")
     return

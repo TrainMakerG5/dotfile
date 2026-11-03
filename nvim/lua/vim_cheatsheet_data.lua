@@ -1,6 +1,6 @@
 local M = {}
 
--- この一覧を編集すると、Neovim版とVSCode版の両方へ反映されます。
+-- この一覧を編集すると、Neovim版とVS Code版の両方へ反映されます。
 M.sections = {
     {
         title = "移動",
@@ -145,7 +145,7 @@ local function escape_html(value)
     return value:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub('"', "&quot;")
 end
 
----VSCode Webview用のHTMLを生成します。
+---VS Code Webview用のHTMLを生成します。
 ---@return string
 function M.to_html()
     local cards = {}
@@ -170,7 +170,7 @@ h1{margin:0;color:var(--vscode-textLink-foreground);font-size:18px;letter-spacin
 main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:14px}section{padding:14px;border:1px solid var(--vscode-widget-border);border-radius:10px;background:var(--vscode-editorWidget-background)}
 h2{margin:0 0 10px;color:var(--vscode-symbolIcon-keywordForeground);font-size:14px}dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 12px;margin:0;align-items:baseline}dt,dd{margin:0}dt{color:var(--vscode-terminal-ansiCyan);font-family:var(--vscode-editor-font-family);font-weight:700;white-space:nowrap}dd{color:var(--vscode-descriptionForeground);font-size:12px}
 kbd{padding:2px 6px;border:1px solid var(--vscode-keybindingLabel-border);border-bottom-width:2px;border-radius:5px;color:var(--vscode-keybindingLabel-foreground);background:var(--vscode-keybindingLabel-background);font-family:var(--vscode-editor-font-family)}
-</style></head><body><article class="guide"><header><h1>Vim Editing Guide</h1><p class="hint"><kbd>Space</kbd> <kbd>?</kbd> でもう一度押すと閉じます</p></header><main>]] .. table.concat(
+</style></head><body><article class="guide"><header><h1>Vim Editing Guide</h1><p class="hint"><kbd>Space</kbd> <kbd>?</kbd> をもう一度押すと閉じます</p></header><main>]] .. table.concat(
         cards
     ) .. "</main></article></body></html>"
 end

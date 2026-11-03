@@ -145,7 +145,7 @@ local function commit_and_push(opts)
         return
     end
     if status.stdout == "" then
-        vim.notify("変更はありません")
+        vim.notify("変更はありません。")
         return
     end
     if vim.fn.confirm("変更を commit して GitHub に push しますか？", "&Yes\n&No", 2) ~= 1 then
@@ -173,7 +173,7 @@ local function commit_and_push(opts)
 
     local branch = git(cwd, { "branch", "--show-current" })
     if branch.code ~= 0 or vim.trim(branch.stdout) == "" then
-        vim.notify("現在のブランチを取得できません", vim.log.levels.ERROR)
+        vim.notify("現在のブランチを取得できません。", vim.log.levels.ERROR)
         return
     end
 

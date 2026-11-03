@@ -85,7 +85,7 @@ Set-Location "$env:USERPROFILE\dotfile"
 .\install.ps1 -SyncPlugins
 ```
 
-`-SyncPlugins`を指定すると、設定の登録後に`lazy-lock.json`に従ってNeovimプラグインを同期し、IME切り替えCLIも導入します。プラグインをまだダウンロードしない場合は、オプションを外して`.\install.ps1`を実行してください。設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行します。Windows版はNeovim設定のジャンクションと、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録します。
+`-SyncPlugins`を指定すると、設定の登録後に`lazy-lock.json`に従ってNeovimプラグインを同期し、IME切り替えCLIも導入します。プラグインをまだダウンロードしない場合は、オプションを外して`.\install.ps1`を実行してください。設定を変更せず現在の状態だけを確認する場合は、`.\install.ps1 -Check`を実行します。Windows版はNeovim設定のジャンクションと、`$HOME\.config\starship.toml`からStarship設定へのシンボリックリンク、`%APPDATA%\herdr\config.toml`からWindows用Herdr設定へのシンボリックリンクを登録し、Herdrが利用できる場合は`pr-watch`も登録します。
 
 Herdr／Starship設定のシンボリックリンク作成に失敗する場合は、Windowsの開発者モードを有効にするか、管理者PowerShellでインストーラーを再実行してください。
 
@@ -138,7 +138,7 @@ Invoke-Expression (&starship init powershell)
 
 自動インストーラーを使わない場合、または処理内容を個別に管理したい場合は、以下の手順を利用してください。
 
-### Windows PowerShell
+#### Windows PowerShell（手動）
 
 既存の`%LOCALAPPDATA%\nvim`がある場合は、先に別の場所へ移動してください。その後、PowerShellで次を実行します。
 
@@ -159,7 +159,7 @@ New-Item -ItemType SymbolicLink -Path $herdrConfig -Target $herdrTarget
 
 リンクを作成するため、cloneしたリポジトリの変更がNeovimとHerdrへ直接反映されます。Windows用のHerdr設定ではPowerShell 7（`pwsh`）を使用します。Herdrを使わない場合、Herdr設定のリンクは不要です。
 
-### WSL2／Linux（手動）
+#### WSL2／Linux（手動）
 
 既存の`~/.config/nvim`がある場合は、先に別の場所へ移動してください。
 
@@ -172,7 +172,7 @@ ln -s ~/dotfile/nvim ~/.config/nvim
 mkdir -p ~/.config/herdr
 ln -s ~/dotfile/herdr/config.toml ~/.config/herdr/config.toml
 
-# btopペインを使う場合だけ実行します。
+# Herdrプラグイン（btopペイン・PR Watch）を使う場合だけ実行します。
 herdr plugin link ~/dotfile/herdr/plugins/btop-sidebar
 herdr plugin link ~/dotfile/herdr/plugins/pr-watch
 ```
@@ -218,7 +218,7 @@ herdr plugin list
 herdr plugin action list
 ```
 
-一覧に`local.btop-sidebar`がなければ、リポジトリ直下で`./install.sh`を再実行してください。登録後もキー操作が反映されない場合はHerdrを再起動してください。
+一覧に`local.btop-sidebar`（Linuxのみ）や`local.pr-watch`がなければ、リポジトリ直下で`./install.sh`または`.\install.ps1`を再実行してください。登録後もキー操作が反映されない場合はHerdrを再起動してください。
 
 ### Neovimプラグインが読み込まれない
 
@@ -383,7 +383,7 @@ python3 -m ipykernel install --user --name python3
 
 Windowsでコマンド名が`python`の場合は、`python3`を`python`に読み替えてください。
 
-Windowsネイティブではimage.nvimを無効化し、テキスト出力を利用します。WSL2／Linuxでは、ImageMagickとKitty Graphics Protocol対応ターミナルを検出できた場合だけ画像表示を有効化します。
+Windowsネイティブでは`image.nvim`を無効化し、テキスト出力を利用します。WSL2／Linuxでは、ImageMagickとKitty Graphics Protocol対応ターミナルを検出できた場合だけ画像表示を有効化します。
 
 ## 環境変数と個人用コマンド
 
@@ -412,11 +412,11 @@ Unix向けの`config.toml`は環境に依存しにくい共通項目だけを持
 
 Linuxで`btop`と`python3`が利用できる場合、`btop-sidebar`プラグインで現在のワークスペース下部にbtopを表示できます。`Ctrl+B`を押して離し、`Shift+B`を押すと開閉できます。開いても元のペインからフォーカスは移動しません。Windowsではこのプラグインは動作しません。
 
-WindowsとWSL／Linuxでは、`PR Watch`プラグインで右側にGitHub PR一覧を表示できます。`Ctrl+B`を押して離し、`Shift+P`を押すと開閉できます。自分にレビュー依頼があるオープンPRをリポジトリ横断で表示し、現在のペインがいるリポジトリのオープンPRも表示します。表示は60秒ごとに更新されます。
+WindowsとWSL／Linuxでは、`pr-watch`プラグイン（PR Watch）で右側にGitHub PR一覧を表示できます。`Ctrl+B`を押して離し、`Shift+P`を押すと開閉できます。自分にレビュー依頼があるオープンPRをリポジトリ横断で表示し、現在のペインで開いているリポジトリのオープンPRも表示します。表示は60秒ごとに更新されます。
 
 PR WatchにはPythonと、認証済みの[GitHub CLI](https://cli.github.com/)が必要です。セットアップ後にプラグインが未登録の場合は、各OSのリポジトリ直下で通常のインストーラーを再実行してください。
 
-Herdrサーバーを再起動すると、開いていた`PR Watch`ペインの監視を起動フックで自動再開します。閉じていたペインは開きません。すでにプログラムが動いている場合や、シェルだけが実行中と確認できない場合は再開をスキップします。起動フックはクライアントの再接続や設定の再読み込みでは実行されず、次のサーバー起動から適用されます。
+Herdrサーバーを再起動すると、開いていたPR Watchペインの監視を起動フックで自動再開します。閉じていたペインは開きません。すでにプログラムが動いている場合や、シェルだけが実行中と確認できない場合は再開をスキップします。起動フックはクライアントの再接続や設定の再読み込みでは実行されず、次のサーバー起動から適用されます。
 
 ```powershell
 .\install.ps1

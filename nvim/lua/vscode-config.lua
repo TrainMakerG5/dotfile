@@ -7,7 +7,7 @@ vim.opt.smartcase = true
 vim.opt.timeoutlen = 300
 vim.opt.clipboard = "unnamedplus"
 
--- WSLを含め、VSCodeのクリップボードを利用します。
+-- WSLを含め、VS Codeのクリップボードを利用します。
 if vim.g.vscode_clipboard then
     vim.g.clipboard = vim.g.vscode_clipboard
 end
@@ -50,7 +50,7 @@ local function map(mode, lhs, command, description)
     })
 end
 
--- VSCodeの検索・ファイル操作へ接続します。
+-- VS Codeの検索・ファイル操作へ接続します。
 map("n", "<leader>ff", "workbench.action.quickOpen", "Find files")
 map("n", "<leader>fg", "workbench.action.findInFiles", "Find in files")
 map("n", "<leader>fb", "workbench.action.showAllEditors", "Open editors")
@@ -59,7 +59,7 @@ map("n", "<leader>bd", "workbench.action.closeActiveEditor", "Close editor")
 map("n", "<leader>tt", "workbench.action.terminal.toggleTerminal", "Toggle terminal")
 map({ "n", "i", "x" }, "<C-a>", "editor.action.selectAll", "Select all")
 
----VSCode右側のVim操作ガイドを開閉します。
+---VS Code右側のVim操作ガイドを開閉します。
 local function toggle_vim_cheatsheet()
     vscode.eval_async(
         [[
@@ -104,7 +104,7 @@ vim.keymap.set("n", "<leader>?", toggle_vim_cheatsheet, {
     desc = "Vim操作のチートシート",
 })
 
--- VSCodeの言語機能へ接続します。
+-- VS Codeの言語機能へ接続します。
 map("n", "gd", "editor.action.revealDefinition", "Go to definition")
 map("n", "gr", "editor.action.goToReferences", "Go to references")
 map("n", "gi", "editor.action.goToImplementation", "Go to implementation")
@@ -116,7 +116,7 @@ map("x", "<leader>cf", "editor.action.formatSelection", "Format selection")
 map("n", "]d", "editor.action.marker.next", "Next diagnostic")
 map("n", "[d", "editor.action.marker.prev", "Previous diagnostic")
 
--- VSCodeのソース管理へ接続します。
+-- VS Codeのソース管理へ接続します。
 map("n", "<leader>gg", "workbench.view.scm", "Source control")
 
 -- Neovim本来の編集操作だけを軽量に補います。
