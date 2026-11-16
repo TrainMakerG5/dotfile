@@ -62,8 +62,8 @@ style = "bold #7aa2f7"
 truncate_to_repo = false
 # 末尾から2階層をそのまま残します。
 truncation_length = 2
-# 溢れた親階層を1文字に短縮します。
-fish_style_pwd_dir_length = 1
+# 溢れた親階層を2文字に短縮します。
+fish_style_pwd_dir_length = 2
 # 省略記号を表示しません。
 truncation_symbol = ""
 read_only = " [RO]"
